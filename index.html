@@ -944,7 +944,17 @@
 			else if (distance <= 100000000) stepInterval = 10000000;
 			else if (distance <= 1000000000) stepInterval = 100000000;
 			else if (distance <= 10000000000) stepInterval = 1000000000;
-            else stepInterval = 10000000000;
+			else if (distance <= 100000000000) stepInterval = 10000000000;
+			else if (distance <= 1000000000000) stepInterval = 100000000000;
+			else if (distance <= 10000000000000) stepInterval = 1000000000000;
+			else if (distance <= 100000000000000) stepInterval = 10000000000000;
+			else if (distance <= 1000000000000000) stepInterval = 100000000000000;
+			else if (distance <= 10000000000000000) stepInterval = 1000000000000000;
+			else if (distance <= 100000000000000000) stepInterval = 10000000000000000;
+			else if (distance <= 1000000000000000000) stepInterval = 100000000000000000;
+			else if (distance <= 10000000000000000000) stepInterval = 1000000000000000000;
+			else if (distance <= 100000000000000000000) stepInterval = 10000000000000000000;
+            else stepInterval = 100000000000000000000;
 
             let absoluteDistance = Math.ceil(distance / stepInterval) * stepInterval;
 
