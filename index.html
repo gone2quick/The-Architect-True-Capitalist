@@ -623,7 +623,6 @@
                     if (state.upgrades[id]) state.upgrades[id].level = parsed.upgrades[id].level;
                 }
                 
-                // Keep asset hidden states updated based on loaded upgrade level
                 updateHiddenAssets();
                 return true;
             } catch (e) {
@@ -886,7 +885,6 @@
             state.cash = 100 + (state.upgrades.nestEgg.level * 100);
             state.currentJobId = null; 
             
-            // Check if Temporal Freeze is unlocked to automatically pause cycles at start of run
             if (state.upgrades.freezeTime.level > 0) {
                 state.isPaused = true;
             } else {
@@ -940,13 +938,9 @@
         }
 
         function simulateMarket() {
-            // Check if game is paused before progressing cycles
             if (state.isPaused && state.upgrades.freezeTime.level > 0) {
                 return;
             }
-
-            const upgradeLuck = state.upgrades.bullRun.level * 0.02;
-            const volMultiplier = 1.0 + (state.upgrades.volatile.level * 0.20);
 
             for (let ticker in state.assets) {
                 if (state.assets[ticker].hidden) continue;
@@ -955,10 +949,16 @@
                 const oldPrice = asset.price;
                 let changePercent = 0;
 
+                // Restored 10% dampener condition for cryptocurrency assets
+                const effectDampener = (asset.type === 'crypto') ? 0.10 : 1.00;
+                
+                const upgradeLuck = (state.upgrades.bullRun.level * 0.02) * effectDampener;
+                const volMultiplier = 1.0 + ((state.upgrades.volatile.level * 0.20) * effectDampener);
+
                 if (asset.type === 'stock') {
                     const stockBias = 0 + upgradeLuck; 
                     changePercent = (Math.random() - 0.40 + stockBias) * asset.volatility * volMultiplier;
-                    if (changePercent > 0.35) changePercent = 0.35; // Loosened ceiling slightly for upgraded tier stocks
+                    if (changePercent > 0.35) changePercent = 0.35; 
                     if (changePercent < -0.15) changePercent = -0.15;
                 } else {
                     const cryptoBias = 0 + upgradeLuck;
@@ -1140,7 +1140,6 @@
                 rbBtn.innerText = `Rebirth (Req: $15.0k)`;
             }
 
-            // Show or hide pause button based on Temporal Freeze level
             if (state.upgrades.freezeTime.level > 0) {
                 pauseBtn.style.display = 'inline-block';
             } else {
@@ -1244,7 +1243,7 @@
 
         // --- CORE RUNTIMES ---
         loadGame(); 
-        updateHiddenAssets(); // Fallback alignment step for hard refresh integrity
+        updateHiddenAssets(); 
         
         setInterval(simulateMarket, 1500);
         setInterval(saveGame, 5000); 
@@ -1254,14 +1253,12 @@
             document.getElementById('theme-toggle').innerText = 'Dark Mode';
         }
 
-        // Validate that selected asset is not hidden on load before assigning
         if (state.assets[state.selectedAsset] && state.assets[state.selectedAsset].hidden) {
             state.selectedAsset = 'AAPL';
         }
         selectAsset(state.selectedAsset || 'AAPL');
         renderJobs();
         
-        // Ensure UI styling matches pause state on initial load
         if (state.isPaused && state.upgrades.freezeTime.level > 0) {
             updatePauseButtonUI();
         } else {
