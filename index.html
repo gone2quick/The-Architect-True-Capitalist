@@ -854,12 +854,12 @@
 
                 // Implement requested asymmetrical volatility boundaries
                 if (asset.type === 'stock') {
-                    const stockBias = 0.01 + upgradeLuck; 
+                    const stockBias = 0 + upgradeLuck; 
                     changePercent = (Math.random() - 0.40 + stockBias) * asset.volatility * volMultiplier;
                     if (changePercent > 0.10) changePercent = 0.10;
                     if (changePercent < -0.05) changePercent = -0.05;
                 } else {
-                    const cryptoBias = -0.05 + upgradeLuck;
+                    const cryptoBias = 0 + upgradeLuck;
                     changePercent = (Math.random() - 0.50 + cryptoBias) * asset.volatility * volMultiplier;
                     if (changePercent > 10.00) changePercent = 10.00;
                     if (changePercent < -0.90) changePercent = -0.50;
