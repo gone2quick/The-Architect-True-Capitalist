@@ -121,6 +121,15 @@
             filter: brightness(1.15);
         }
 
+        .pause-btn {
+            background: var(--container-bg);
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        .pause-btn:hover {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
         .tabs {
             display: flex;
             gap: 10px;
@@ -338,6 +347,7 @@
                 <button id="theme-toggle" onclick="toggleTheme()">Light Mode</button>
                 <button id="format-toggle" onclick="toggleFormat()">Format: Compact</button>
                 <button id="rebirth-btn" class="rebirth-btn" onclick="attemptRebirth()">Rebirth (Req: $15.0k)</button>
+                <button id="pause-btn" class="pause-btn" onclick="togglePause()" style="display: none;">Pause Cycles</button>
             </div>
         </header>
 
@@ -445,6 +455,12 @@
                         <span class="node-cost" id="cost-brokerage">0.10 A$</span>
                         <button onclick="buyUpgrade('brokerage')" id="btn-upg-brokerage">Upgrade</button>
                     </div>
+                    <div class="upgrade-node" id="upg-freezeTime">
+                        <h4>Temporal Freeze</h4>
+                        <p id="desc-freezeTime">Unlocks the protocol to pause core market processing steps.</p>
+                        <span class="node-cost" id="cost-freezeTime">10.00 A$</span>
+                        <button onclick="buyUpgrade('freezeTime')" id="btn-upg-freezeTime">Upgrade</button>
+                    </div>
                 </div>
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-leverage">
@@ -491,6 +507,7 @@
             themeSetting: 'dark',
             selectedAsset: 'ETH', 
             currentJobId: null,
+            isPaused: false,
             assets: {
                 'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.03, history: Array(25).fill(150) },
                 'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.05, history: Array(25).fill(250) },
@@ -503,6 +520,7 @@
             upgrades: {
                 nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 199 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
+                freezeTime: { level: 0, baseCost: 10.0, scaling: 5.0, layer: 1, maxLevel: 1 },
                 leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 50, requires: ['nestEgg', 'brokerage'] },
                 bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, requires: ['nestEgg', 'brokerage'] },
@@ -577,6 +595,7 @@
                 if (parsed.themeSetting !== undefined) state.themeSetting = parsed.themeSetting;
                 if (parsed.selectedAsset !== undefined) state.selectedAsset = parsed.selectedAsset;
                 if (parsed.currentJobId !== undefined) state.currentJobId = parsed.currentJobId;
+                if (parsed.isPaused !== undefined) state.isPaused = parsed.isPaused;
                 
                 for (let ticker in parsed.assets) {
                     if (state.assets[ticker]) {
@@ -672,6 +691,24 @@
                 state.themeSetting = 'dark';
             }
             drawChart();
+        }
+
+        // --- PAUSE MECHANIC TOGGLE ---
+        function togglePause() {
+            if (state.upgrades.freezeTime.level <= 0) return;
+            state.isPaused = !state.isPaused;
+            const pauseBtn = document.getElementById('pause-btn');
+            if (state.isPaused) {
+                pauseBtn.innerText = "Resume Cycles";
+                pauseBtn.style.color = "var(--accent-color)";
+                pauseBtn.style.borderColor = "var(--accent-color)";
+                logMessage("TEMPORAL ARREST: Market cycle iterations paused.");
+            } else {
+                pauseBtn.innerText = "Pause Cycles";
+                pauseBtn.style.color = "#f59e0b";
+                pauseBtn.style.borderColor = "#f59e0b";
+                logMessage("TEMPORAL FLOW: Market cycle iterations resumed.");
+            }
         }
 
         function toggleFormat() {
@@ -780,6 +817,7 @@
             }
         }
 
+        // --- UPGRADE ENGINE ---
         function buyUpgrade(id) {
             const upg = state.upgrades[id];
             const cost = getUpgradeCost(id);
@@ -811,6 +849,7 @@
             state.ascendedCash += gainedA$;
             state.cash = 100 + (state.upgrades.nestEgg.level * 100);
             state.currentJobId = null; 
+            state.isPaused = false; // Reset pause status on fresh rebirth
             
             for (let ticker in state.assets) {
                 state.assets[ticker].owned = 0;
@@ -858,6 +897,11 @@
         }
 
         function simulateMarket() {
+            // Check if game is paused before progressing cycles
+            if (state.isPaused && state.upgrades.freezeTime.level > 0) {
+                return;
+            }
+
             const upgradeLuck = state.upgrades.bullRun.level * 0.02;
             const volMultiplier = 1.0 + (state.upgrades.volatile.level * 0.20);
 
@@ -1041,6 +1085,7 @@
             const totalVal = getPortfolioValue();
             const pendingA$ = calculatePendingA$();
             const rbBtn = document.getElementById('rebirth-btn');
+            const pauseBtn = document.getElementById('pause-btn');
             
             if (totalVal >= REBIRTH_REQUIREMENT) {
                 rbBtn.disabled = false;
@@ -1050,11 +1095,18 @@
                 rbBtn.innerText = `Rebirth (Req: $15.0k)`;
             }
 
+            // Show or hide pause button based on Temporal Freeze level
+            if (state.upgrades.freezeTime.level > 0) {
+                pauseBtn.style.display = 'inline-block';
+            } else {
+                pauseBtn.style.display = 'none';
+            }
+
             if (state.selectedAsset) {
                 const curAsset = state.assets[state.selectedAsset];
                 const prefix = curAsset.type === 'stock' ? 'stock' : 'crypto';
                 
-                const containerEl = document.getElementById(`panel-${prefix}-title`);
+                const containerEl = document.getElementById('panel-' + prefix + '-title');
                 if (containerEl) {
                     containerEl.innerHTML = `${curAsset.name} (<span style="color:var(--ascend-color)">${state.selectedAsset}</span>)`;
                 }
@@ -1119,6 +1171,7 @@
                 
                 if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 100} at launch.\nAdds +$100 starting money/lvl.`;
                 if(id === 'brokerage') descEl.innerText = `Current Fee: ${(getFeeMultiplier() * 100).toFixed(2)}%.\nRemoves 1% from standard fee/lvl.`;
+                if(id === 'freezeTime') descEl.innerText = `Current Core Matrix: ${upg.level > 0 ? "Unlocked" : "Locked"}.\nUnlocks a cycle execution bypass.`;
                 if(id === 'leverage') descEl.innerText = `Current Mult: +${upg.level * 50}%\nAmplifies base job income payload by +50%/lvl.`;
                 if(id === 'bullRun') descEl.innerText = `Current Engine Luck: +${upg.level * 2}%\nIncreases drift trend vectors by +2%/lvl.`;
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
