@@ -62,6 +62,8 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .title-area h1 {
@@ -88,6 +90,7 @@
         .controls {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         button {
@@ -207,7 +210,6 @@
             font-size: 1rem;
         }
 
-        /* Context-aware dynamic display row */
         .conditional-row {
             display: none;
             border-top: 1px dashed var(--border-color);
@@ -330,6 +332,8 @@
                 <div>Ascended: <span id="stat-ascended" class="ascend-val">0 A$</span></div>
             </div>
             <div class="controls">
+                <button onclick="exportSave()" style="border-color: var(--accent-color); color: var(--accent-color);">Export Save</button>
+                <button onclick="importSave()" style="border-color: var(--ascend-color); color: var(--ascend-color);">Import Save</button>
                 <button onclick="wipeSave()" style="border-color: var(--danger-color); color: var(--danger-color);">Hard Reset</button>
                 <button id="theme-toggle" onclick="toggleTheme()">Light Mode</button>
                 <button id="format-toggle" onclick="toggleFormat()">Format: Compact</button>
@@ -344,6 +348,7 @@
             <button class="tab-btn" onclick="switchTab('upgrades')">Architect Upgrades</button>
         </div>
 
+        <!-- STOCKS TAB -->
         <div id="tab-stocks" class="tab-content active">
             <div class="market-layout">
                 <table class="market-table">
@@ -380,6 +385,7 @@
             </div>
         </div>
 
+        <!-- CRYPTO TAB -->
         <div id="tab-crypto" class="tab-content">
             <div class="market-layout">
                 <table class="market-table">
@@ -416,6 +422,7 @@
             </div>
         </div>
 
+        <!-- JOBS TAB -->
         <div id="tab-jobs" class="tab-content">
             <div style="text-align: center; margin-bottom: 15px;">
                 <p>Secure employment to extract passive streams of raw cash payload every cycle.</p>
@@ -423,11 +430,13 @@
             <div class="jobs-grid" id="jobs-container"></div>
         </div>
 
+        <!-- UPGRADES TAB -->
         <div id="tab-upgrades" class="tab-content">
             <div style="text-align: center; margin-bottom: 15px;">
                 <p>Spend your accumulated <strong>A$</strong> to permanently rewrite core code parameters. Levels scale infinitely.</p>
             </div>
             <div class="tree-container">
+                <!-- Layer 1 -->
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-nestEgg">
                         <h4>Subsidized Kickstart</h4>
@@ -442,6 +451,7 @@
                         <button onclick="buyUpgrade('brokerage')" id="btn-upg-brokerage">Upgrade</button>
                     </div>
                 </div>
+                <!-- Layer 2 -->
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-bullRun">
                         <h4>Sentiment Override</h4>
@@ -456,6 +466,7 @@
                         <button onclick="buyUpgrade('volatile')" id="btn-upg-volatile">Locked</button>
                     </div>
                 </div>
+                <!-- Layer 3 -->
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-divine">
                         <h4>True Capital Siphon</h4>
@@ -482,13 +493,13 @@
             selectedAsset: 'AAPL', 
             currentJobId: null,
             assets: {
-                'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.003, history: Array(25).fill(150) },
-                'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.005, history: Array(25).fill(250) },
-                'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.004, history: Array(25).fill(90) },
-                'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.002, history: Array(25).fill(100) },
-                'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(30000) }, 
-                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.12, history: Array(25).fill(1800) },
-                'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.25, history: Array(25).fill(0.10) }
+                'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.03, history: Array(25).fill(150) },
+                'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.05, history: Array(25).fill(250) },
+                'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(90) },
+                'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.02, history: Array(25).fill(100) },
+                'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.40, history: Array(25).fill(30000) }, 
+                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.55, history: Array(25).fill(1800) },
+                'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.85, history: Array(25).fill(0.10) }
             },
             upgrades: {
                 nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1 },
@@ -511,14 +522,55 @@
 
         // --- LOCAL STORAGE SAVE & LOAD ---
         function saveGame() {
-            localStorage.setItem('architect_save_v3_clean', JSON.stringify(state));
+            localStorage.setItem('architect_save_v4_asym', JSON.stringify(state));
         }
 
         function loadGame() {
-            const saved = localStorage.getItem('architect_save_v3_clean');
+            const saved = localStorage.getItem('architect_save_v4_asym');
             if (!saved) return;
+            parseAndApplySave(saved, false);
+        }
+
+        // --- BASE64 IMPORT / EXPORT SYSTEM ---
+        function exportSave() {
+            saveGame();
+            const rawSave = localStorage.getItem('architect_save_v4_asym');
+            if (!rawSave) {
+                logMessage("Error compiling save matrix.");
+                return;
+            }
             try {
-                const parsed = JSON.parse(saved);
+                const encoded = btoa(encodeURIComponent(rawSave));
+                navigator.clipboard.writeText(encoded).then(() => {
+                    alert("Encoded save configuration copied to clipboard!");
+                    logMessage("Save matrix successfully serialized into Base64 string.");
+                }).catch(() => {
+                    prompt("Failed auto-copy. Manually extract string payload here:", encoded);
+                });
+            } catch(e) {
+                logMessage("Encryption module exception.");
+            }
+        }
+
+        function importSave() {
+            const codeString = prompt("Paste your Base64 encoded game data string here:");
+            if (!codeString) return;
+            try {
+                const decodedRaw = decodeURIComponent(atob(codeString.trim()));
+                if (parseAndApplySave(decodedRaw, true)) {
+                    saveGame();
+                    alert("Paradigm structural update initialized successfully.");
+                    window.location.reload();
+                }
+            } catch(e) {
+                alert("Decryption fault: Invalid data configuration signature string.");
+                logMessage("Data string corrupt or missing verification tags.");
+            }
+        }
+
+        function parseAndApplySave(jsonString, isExplicitImport) {
+            try {
+                const parsed = JSON.parse(jsonString);
                 if (parsed.cash !== undefined) state.cash = parsed.cash;
                 if (parsed.ascendedCash !== undefined) state.ascendedCash = parsed.ascendedCash;
                 if (parsed.formatSetting !== undefined) state.formatSetting = parsed.formatSetting;
@@ -538,14 +590,17 @@
                 for (let id in parsed.upgrades) {
                     if (state.upgrades[id]) state.upgrades[id].level = parsed.upgrades[id].level;
                 }
+                return true;
             } catch (e) {
+                if (isExplicitImport) throw e;
                 console.error("Save state parsing failure", e);
+                return false;
             }
         }
 
         function wipeSave() {
             if(confirm("Confirm structural purge? This completely wipes out all savings and ascension currencies.")) {
-                localStorage.removeItem('architect_save_v3_clean');
+                localStorage.removeItem('architect_save_v4_asym');
                 window.location.reload();
             }
         }
@@ -658,7 +713,6 @@
             if (state.cash >= totalCost) {
                 state.cash -= totalCost;
                 
-                // Track weighted average purchase cost
                 const currentTotalCostValue = (asset.owned * asset.avgPrice) + cost;
                 asset.owned += count;
                 asset.avgPrice = currentTotalCostValue / asset.owned;
@@ -688,7 +742,7 @@
 
             asset.owned -= count;
             if (asset.owned === 0) {
-                asset.avgPrice = 0; // Clear index tracking data
+                asset.avgPrice = 0; 
             }
 
             state.cash += netEarnings;
@@ -726,7 +780,6 @@
             }
         }
 
-        // --- STRUCTURAL VERIFICATION NODES ---
         function isNodeUnlocked(id) {
             const upg = state.upgrades[id];
             if (upg.layer === 1) return true;
@@ -736,7 +789,7 @@
         function attemptRebirth() {
             const totalVal = getPortfolioValue();
             if (totalVal < REBIRTH_REQUIREMENT) {
-                logMessage(`Ascension denied. Minimum portfolio valuation requirement mismatch.`);
+                logMessage("Ascension denied. Minimum portfolio valuation requirement mismatch.");
                 return;
             }
 
@@ -799,16 +852,21 @@
                 const oldPrice = asset.price;
                 let changePercent = 0;
 
+                // Implement requested asymmetrical volatility boundaries
                 if (asset.type === 'stock') {
-                    const stockBias = 0.035 + upgradeLuck; 
-                    changePercent = (Math.random() - 0.485 + stockBias) * asset.volatility * volMultiplier;
+                    const stockBias = 0.01 + upgradeLuck; 
+                    changePercent = (Math.random() - 0.40 + stockBias) * asset.volatility * volMultiplier;
+                    if (changePercent > 0.10) changePercent = 0.10;
+                    if (changePercent < -0.05) changePercent = -0.05;
                 } else {
-                    const cryptoBias = 0.0 + upgradeLuck;
-                    changePercent = (Math.random() - 0.5 + cryptoBias) * asset.volatility * volMultiplier;
+                    const cryptoBias = -0.05 + upgradeLuck;
+                    changePercent = (Math.random() - 0.50 + cryptoBias) * asset.volatility * volMultiplier;
+                    if (changePercent > 10.00) changePercent = 10.00;
+                    if (changePercent < -0.90) changePercent = -0.50;
                 }
                 
                 asset.price = asset.price * (1 + changePercent);
-                if (asset.price < 0.001) asset.price = 0.001; 
+                if (asset.price < 0.0001) asset.price = 0.0001; 
                 asset.change = changePercent * 100;
 
                 asset.history.push(asset.price);
@@ -996,7 +1054,6 @@
                     pChange.className = curAsset.change >= 0 ? 'price-up' : 'price-down';
                 }
 
-                // Handle conditional row display and value rendering for historical entry points
                 if (curAsset.owned >= 1) {
                     pAvgBox.style.display = 'flex';
                     if (pAvg) pAvg.innerText = `$${formatNumber(curAsset.avgPrice)}`;
