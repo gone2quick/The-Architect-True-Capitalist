@@ -806,7 +806,7 @@
 
             const gainedA$ = calculatePendingA$();
             state.ascendedCash += gainedA$;
-            state.cash = 100 + (state.upgrades.nestEgg.level * 50);
+            state.cash = 100 + (state.upgrades.nestEgg.level * 100);
             state.currentJobId = null; 
             
             for (let ticker in state.assets) {
@@ -941,7 +941,10 @@
 			else if (distance <= 100000) stepInterval = 10000;
 			else if (distance <= 1000000) stepInterval = 100000;
 			else if (distance <= 10000000) stepInterval = 1000000;
-            else stepInterval = 100000000;
+			else if (distance <= 100000000) stepInterval = 10000000;
+			else if (distance <= 1000000000) stepInterval = 100000000;
+			else if (distance <= 10000000000) stepInterval = 1000000000;
+            else stepInterval = 10000000000;
 
             let absoluteDistance = Math.ceil(distance / stepInterval) * stepInterval;
 
@@ -1113,7 +1116,7 @@
                 
                 nodeEl.className = 'upgrade-node';
                 
-                if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 50} at launch.\nAdds +$50 starting money/lvl.`;
+                if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 100} at launch.\nAdds +$100 starting money/lvl.`;
                 if(id === 'brokerage') descEl.innerText = `Current Fee: ${(getFeeMultiplier() * 100).toFixed(2)}%.\nRemoves 1% from standard fee/lvl.`;
                 if(id === 'leverage') descEl.innerText = `Current Mult: +${upg.level * 50}%\nAmplifies base job income payload by +50%/lvl.`;
                 if(id === 'bullRun') descEl.innerText = `Current Engine Luck: +${upg.level * 2}%\nIncreases drift trend vectors by +2%/lvl.`;
