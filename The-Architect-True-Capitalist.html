@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Architect: True Capitalist</title>
+    <style>
+        :root {
+            --bg-color: #0d0e12;
+            --container-bg: #16181f;
+            --text-color: #e2e8f0;
+            --border-color: #2d3748;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --ascend-color: #8b5cf6;
+            --button-hover: #262936;
+            --selected-bg: #1e2230;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --container-bg: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #cbd5e1;
+            --accent-color: #059669;
+            --danger-color: #dc2626;
+            --ascend-color: #6d28d9;
+            --button-hover: #f1f5f9;
+            --selected-bg: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .title-area h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+        }
+        
+        .title-area span {
+            color: var(--ascend-color);
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 24px;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .stat-val { color: var(--accent-color); }
+        .ascend-val { color: var(--ascend-color); }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: var(--button-hover);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .rebirth-btn {
+            background: var(--ascend-color);
+            color: white;
+            border: none;
+        }
+        .rebirth-btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .market-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        .market-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .market-table th, .market-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .market-table tbody tr {
+            cursor: pointer;
+        }
+
+        .market-table tbody tr:hover {
+            background-color: var(--button-hover);
+        }
+
+        .market-table tbody tr.selected-row {
+            background-color: var(--selected-bg);
+        }
+
+        .price-up { color: var(--accent-color); }
+        .price-down { color: var(--danger-color); }
+
+        .trading-panel {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-stats {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        [data-theme="light"] .panel-stats { background: rgba(0,0,0,0.03); }
+
+        .panel-stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .panel-stat-item strong {
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        /* Context-aware dynamic display row */
+        .conditional-row {
+            display: none;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 4px;
+            margin-top: 2px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 170px;
+            background: #000;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .job-card {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        [data-theme="dark"] .job-card { background: rgba(255,255,255,0.02); }
+
+        .job-card.active-job {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .tree-layer {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .upgrade-node {
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            width: 240px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .upgrade-node.unlocked {
+            border-color: var(--ascend-color);
+        }
+
+        .upgrade-node.maxed {
+            border-color: #f59e0b;
+        }
+
+        .upgrade-node h4 { margin-bottom: 6px; }
+        .upgrade-node p { font-size: 0.85rem; margin-bottom: 12px; opacity: 0.8; min-height: 48px;}
+
+        .node-cost {
+            font-weight: bold;
+            color: var(--ascend-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .log-box {
+            margin-top: 24px;
+            background: rgba(0,0,0,0.15);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            height: 90px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        [data-theme="light"] .log-box { background: rgba(0,0,0,0.03); }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="game-container">
+        <header>
+            <div class="title-area">
+                <h1>The Architect: <span>True Capitalist</span></h1>
+            </div>
+            <div class="stats-panel">
+                <div>Cash: <span id="stat-cash" class="stat-val">$100</span></div>
+                <div>Ascended: <span id="stat-ascended" class="ascend-val">0 A$</span></div>
+            </div>
+            <div class="controls">
+                <button onclick="wipeSave()" style="border-color: var(--danger-color); color: var(--danger-color);">Hard Reset</button>
+                <button id="theme-toggle" onclick="toggleTheme()">Light Mode</button>
+                <button id="format-toggle" onclick="toggleFormat()">Format: Compact</button>
+                <button id="rebirth-btn" class="rebirth-btn" onclick="attemptRebirth()">Rebirth (Req: $15.0k)</button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-btn-stocks" onclick="switchTab('stocks')">Stocks</button>
+            <button class="tab-btn" id="tab-btn-crypto" onclick="switchTab('crypto')">Crypto</button>
+            <button class="tab-btn" onclick="switchTab('jobs')">Labor Market (Jobs)</button>
+            <button class="tab-btn" onclick="switchTab('upgrades')">Architect Upgrades</button>
+        </div>
+
+        <div id="tab-stocks" class="tab-content active">
+            <div class="market-layout">
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                            <th>Owned</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stocks-body"></tbody>
+                </table>
+                <div id="stock-trading-panel" class="trading-panel">
+                    <h3 id="panel-stock-title">Select an Asset</h3>
+                    <div class="panel-stats">
+                        <div class="panel-stat-item"><span>Asset Price:</span> <strong id="pstat-stock-price">$0.00</strong></div>
+                        <div class="panel-stat-item"><span>Last Change:</span> <strong id="pstat-stock-change">0.00%</strong></div>
+                        <div class="panel-stat-item"><span>Units Owned:</span> <strong id="pstat-stock-owned">0</strong></div>
+                        <div class="panel-stat-item conditional-row" id="pstat-stock-avg-box"><span>Avg Purchase Price:</span> <strong id="pstat-stock-avg">$0.00</strong></div>
+                    </div>
+                    <p style="font-size:0.85rem; opacity:0.7; margin-top: 4px;">Historical Price Trend (Dynamic Symmetrical Grid):</p>
+                    <div class="chart-container">
+                        <canvas id="stock-canvas"></canvas>
+                    </div>
+                    <div class="action-grid">
+                        <button onclick="buyActiveAsset(1)">Buy 1</button>
+                        <button onclick="buyActiveAsset('MAX')">Buy Max</button>
+                        <button onclick="sellActiveAsset(1)">Sell 1</button>
+                        <button onclick="sellActiveAsset('MAX')">Sell Max</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-crypto" class="tab-content">
+            <div class="market-layout">
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Network</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                            <th>Owned</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crypto-body"></tbody>
+                </table>
+                <div id="crypto-trading-panel" class="trading-panel">
+                    <h3 id="panel-crypto-title">Select an Asset</h3>
+                    <div class="panel-stats">
+                        <div class="panel-stat-item"><span>Asset Price:</span> <strong id="pstat-crypto-price">$0.00</strong></div>
+                        <div class="panel-stat-item"><span>Last Change:</span> <strong id="pstat-crypto-change">0.00%</strong></div>
+                        <div class="panel-stat-item"><span>Units Owned:</span> <strong id="pstat-crypto-owned">0</strong></div>
+                        <div class="panel-stat-item conditional-row" id="pstat-crypto-avg-box"><span>Avg Purchase Price:</span> <strong id="pstat-crypto-avg">$0.00</strong></div>
+                    </div>
+                    <p style="font-size:0.85rem; opacity:0.7; margin-top: 4px;">Historical Price Trend (Dynamic Symmetrical Grid):</p>
+                    <div class="chart-container">
+                        <canvas id="crypto-canvas"></canvas>
+                    </div>
+                    <div class="action-grid">
+                        <button onclick="buyActiveAsset(1)">Buy 1</button>
+                        <button onclick="buyActiveAsset('MAX')">Buy Max</button>
+                        <button onclick="sellActiveAsset(1)">Sell 1</button>
+                        <button onclick="sellActiveAsset('MAX')">Sell Max</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-jobs" class="tab-content">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <p>Secure employment to extract passive streams of raw cash payload every cycle.</p>
+            </div>
+            <div class="jobs-grid" id="jobs-container"></div>
+        </div>
+
+        <div id="tab-upgrades" class="tab-content">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <p>Spend your accumulated <strong>A$</strong> to permanently rewrite core code parameters. Levels scale infinitely.</p>
+            </div>
+            <div class="tree-container">
+                <div class="tree-layer">
+                    <div class="upgrade-node" id="upg-nestEgg">
+                        <h4>Subsidized Kickstart</h4>
+                        <p id="desc-nestEgg">Adds +$50 starting money per level.</p>
+                        <span class="node-cost" id="cost-nestEgg">0.10 A$</span>
+                        <button onclick="buyUpgrade('nestEgg')" id="btn-upg-nestEgg">Upgrade</button>
+                    </div>
+                    <div class="upgrade-node" id="upg-brokerage">
+                        <h4>Regulatory Loopholes</h4>
+                        <p id="desc-brokerage">Reduces fee parameters by 1% per level.</p>
+                        <span class="node-cost" id="cost-brokerage">0.10 A$</span>
+                        <button onclick="buyUpgrade('brokerage')" id="btn-upg-brokerage">Upgrade</button>
+                    </div>
+                </div>
+                <div class="tree-layer">
+                    <div class="upgrade-node" id="upg-bullRun">
+                        <h4>Sentiment Override</h4>
+                        <p id="desc-bullRun">Increases general trade luck indices by +5% per level.</p>
+                        <span class="node-cost" id="cost-bullRun">3.00 A$</span>
+                        <button onclick="buyUpgrade('bullRun')" id="btn-upg-bullRun">Locked</button>
+                    </div>
+                    <div class="upgrade-node" id="upg-volatile">
+                        <h4>Controlled Chaos</h4>
+                        <p id="desc-volatile">Amplifies volatility swings by +20% per level.</p>
+                        <span class="node-cost" id="cost-volatile">4.00 A$</span>
+                        <button onclick="buyUpgrade('volatile')" id="btn-upg-volatile">Locked</button>
+                    </div>
+                </div>
+                <div class="tree-layer">
+                    <div class="upgrade-node" id="upg-divine">
+                        <h4>True Capital Siphon</h4>
+                        <p id="desc-divine">Passively leaks +0.1% of portfolio values into cash every tick per level.</p>
+                        <span class="node-cost" id="cost-divine">10.00 A$</span>
+                        <button onclick="buyUpgrade('divine')" id="btn-upg-divine">Locked</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-box" id="log-box">
+            <div>System operational. Select an asset to evaluate data streams and execution parameters.</div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME STATE ---
+        let state = {
+            cash: 100,
+            ascendedCash: 0,
+            formatSetting: 'compact', 
+            themeSetting: 'dark',
+            selectedAsset: 'AAPL', 
+            currentJobId: null,
+            assets: {
+                'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.003, history: Array(25).fill(150) },
+                'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.005, history: Array(25).fill(250) },
+                'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.004, history: Array(25).fill(90) },
+                'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.002, history: Array(25).fill(100) },
+                'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(30000) }, 
+                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.12, history: Array(25).fill(1800) },
+                'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.25, history: Array(25).fill(0.10) }
+            },
+            upgrades: {
+                nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1 },
+                brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
+                bullRun: { level: 0, baseCost: 3.0, scaling: 1.8, layer: 2, requires: ['nestEgg', 'brokerage'] },
+                volatile: { level: 0, baseCost: 4.0, scaling: 1.7, layer: 2, requires: ['nestEgg', 'brokerage'] },
+                divine: { level: 0, baseCost: 10.0, scaling: 2.2, layer: 3, requires: ['bullRun', 'volatile'] }
+            },
+            jobs: [
+                { id: 'intern', name: 'Paid Algorithm Intern', revenue: 2, req: 0 },
+                { id: 'trader', name: 'Junior Desk Quant', revenue: 15, req: 500 },
+                { id: 'manager', name: 'Portfolio Risk Associate', revenue: 95, req: 4000 },
+                { id: 'director', name: 'Managing Director of Arbitrage', revenue: 650, req: 25000 },
+                { id: 'partner', name: 'Shadow Board Partner', revenue: 5000, req: 150000 }
+            ]
+        };
+
+        const REBIRTH_REQUIREMENT = 15000;
+        let animatedPrices = {}; 
+
+        // --- LOCAL STORAGE SAVE & LOAD ---
+        function saveGame() {
+            localStorage.setItem('architect_save_v3_clean', JSON.stringify(state));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('architect_save_v3_clean');
+            if (!saved) return;
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.cash !== undefined) state.cash = parsed.cash;
+                if (parsed.ascendedCash !== undefined) state.ascendedCash = parsed.ascendedCash;
+                if (parsed.formatSetting !== undefined) state.formatSetting = parsed.formatSetting;
+                if (parsed.themeSetting !== undefined) state.themeSetting = parsed.themeSetting;
+                if (parsed.selectedAsset !== undefined) state.selectedAsset = parsed.selectedAsset;
+                if (parsed.currentJobId !== undefined) state.currentJobId = parsed.currentJobId;
+                
+                for (let ticker in parsed.assets) {
+                    if (state.assets[ticker]) {
+                        state.assets[ticker].price = parsed.assets[ticker].price;
+                        state.assets[ticker].owned = parsed.assets[ticker].owned;
+                        state.assets[ticker].avgPrice = parsed.assets[ticker].avgPrice || 0;
+                        state.assets[ticker].change = parsed.assets[ticker].change;
+                        state.assets[ticker].history = parsed.assets[ticker].history || Array(25).fill(state.assets[ticker].price);
+                    }
+                }
+                for (let id in parsed.upgrades) {
+                    if (state.upgrades[id]) state.upgrades[id].level = parsed.upgrades[id].level;
+                }
+            } catch (e) {
+                console.error("Save state parsing failure", e);
+            }
+        }
+
+        function wipeSave() {
+            if(confirm("Confirm structural purge? This completely wipes out all savings and ascension currencies.")) {
+                localStorage.removeItem('architect_save_v3_clean');
+                window.location.reload();
+            }
+        }
+
+        function calculatePendingA$() {
+            const totalVal = getPortfolioValue();
+            if (totalVal < REBIRTH_REQUIREMENT) return 0;
+            let multiplier = 0.15 / Math.pow(15000, 0.613);
+            return multiplier * Math.pow(totalVal, 0.613);
+        }
+
+        function getUpgradeCost(id) {
+            let upg = state.upgrades[id];
+            return upg.baseCost * Math.pow(upg.scaling, upg.level);
+        }
+
+        function formatNumber(num, isAscended = false) {
+            if (isAscended && num < 1 && num > 0) return num.toFixed(4);
+            if (state.formatSetting === 'scientific') {
+                if (num === 0) return "0.00e0";
+                let exponent = Math.floor(Math.log10(Math.abs(num)));
+                let base = num / Math.pow(10, exponent);
+                return `${base.toFixed(2)}e${exponent}`;
+            } else {
+                if (num < 1000) return num.toFixed(2);
+                const suffixes = ["", "k", "m", "b", "t", "q", "Sx"];
+                const i = Math.floor(Math.log10(num) / 3);
+                return (num / Math.pow(10, i * 3)).toFixed(2) + suffixes[i];
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            let targetBtn = document.getElementById(`tab-btn-${tabName}`) || event.target;
+            if(targetBtn && targetBtn.classList) targetBtn.classList.add('active');
+
+            if (tabName === 'stocks' || tabName === 'crypto') {
+                for(let ticker in state.assets) {
+                    if(state.assets[ticker].type === (tabName === 'stocks' ? 'stock' : 'crypto')) {
+                        selectAsset(ticker);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                document.getElementById('theme-toggle').innerText = 'Dark Mode';
+                state.themeSetting = 'light';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-toggle').innerText = 'Light Mode';
+                state.themeSetting = 'dark';
+            }
+            drawChart();
+        }
+
+        function toggleFormat() {
+            state.formatSetting = (state.formatSetting === 'compact') ? 'scientific' : 'compact';
+            document.getElementById('format-toggle').innerText = `Format: ${state.formatSetting.charAt(0).toUpperCase() + state.formatSetting.slice(1)}`;
+            updateUI();
+        }
+
+        function logMessage(msg) {
+            const box = document.getElementById('log-box');
+            box.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>` + box.innerHTML;
+        }
+
+        function selectAsset(ticker) {
+            state.selectedAsset = ticker;
+            document.querySelectorAll('.market-table tbody tr').forEach(row => row.classList.remove('selected-row'));
+            const targetedRow = document.getElementById(`row-${ticker}`);
+            if(targetedRow) targetedRow.classList.add('selected-row');
+            
+            if (animatedPrices[ticker] === undefined) {
+                animatedPrices[ticker] = state.assets[ticker].price;
+            }
+            
+            updateUI();
+            drawChart();
+        }
+
+        function getFeeMultiplier() {
+            let discountFactor = 1 - (state.upgrades.brokerage.level * 0.01);
+            return Math.max(0, 0.01 * discountFactor);
+        }
+
+        function buyActiveAsset(amount) {
+            const ticker = state.selectedAsset;
+            if(!ticker) return;
+            const asset = state.assets[ticker];
+            let count = amount;
+            
+            if (amount === 'MAX') {
+                count = Math.floor(state.cash / (asset.price * (1 + getFeeMultiplier())));
+            }
+
+            if (count <= 0) return;
+
+            const cost = asset.price * count;
+            const fee = cost * getFeeMultiplier();
+            const totalCost = cost + fee;
+
+            if (state.cash >= totalCost) {
+                state.cash -= totalCost;
+                
+                // Track weighted average purchase cost
+                const currentTotalCostValue = (asset.owned * asset.avgPrice) + cost;
+                asset.owned += count;
+                asset.avgPrice = currentTotalCostValue / asset.owned;
+
+                logMessage(`Acquired ${count} ${ticker} for $${formatNumber(cost)} (Fee: $${formatNumber(fee)})`);
+                updateUI();
+            } else {
+                logMessage(`Insufficient liquid capability.`);
+            }
+        }
+
+        function sellActiveAsset(amount) {
+            const ticker = state.selectedAsset;
+            if(!ticker) return;
+            const asset = state.assets[ticker];
+            let count = amount;
+
+            if (amount === 'MAX') count = asset.owned;
+            if (count <= 0 || asset.owned < count) {
+                logMessage(`Asset ledger error: Insufficient quantity owned.`);
+                return;
+            }
+
+            const revenue = asset.price * count;
+            const fee = revenue * getFeeMultiplier();
+            const netEarnings = revenue - fee;
+
+            asset.owned -= count;
+            if (asset.owned === 0) {
+                asset.avgPrice = 0; // Clear index tracking data
+            }
+
+            state.cash += netEarnings;
+            logMessage(`Liquidated ${count} ${ticker} for $${formatNumber(revenue)} (Fee: $${formatNumber(fee)})`);
+            updateUI();
+        }
+
+        function getPortfolioValue() {
+            let value = state.cash;
+            for (let ticker in state.assets) {
+                value += state.assets[ticker].owned * state.assets[ticker].price;
+            }
+            return value;
+        }
+
+        function selectJob(id) {
+            const job = state.jobs.find(j => j.id === id);
+            if (getPortfolioValue() >= job.req) {
+                state.currentJobId = id;
+                logMessage(`Labor contract signed: Now active as ${job.name}.`);
+                renderJobs();
+            }
+        }
+
+        function buyUpgrade(id) {
+            const upg = state.upgrades[id];
+            const cost = getUpgradeCost(id);
+            if (upg.maxLevel && upg.level >= upg.maxLevel) return;
+
+            if (state.ascendedCash >= cost && isNodeUnlocked(id)) {
+                state.ascendedCash -= cost;
+                upg.level++;
+                logMessage(`Architect Protocol Upgraded: [${id}] integrated to Lvl ${upg.level}`);
+                updateUI();
+            }
+        }
+
+        // --- STRUCTURAL VERIFICATION NODES ---
+        function isNodeUnlocked(id) {
+            const upg = state.upgrades[id];
+            if (upg.layer === 1) return true;
+            return upg.requires.some(reqId => state.upgrades[reqId].level > 0);
+        }
+
+        function attemptRebirth() {
+            const totalVal = getPortfolioValue();
+            if (totalVal < REBIRTH_REQUIREMENT) {
+                logMessage(`Ascension denied. Minimum portfolio valuation requirement mismatch.`);
+                return;
+            }
+
+            const gainedA$ = calculatePendingA$();
+            state.ascendedCash += gainedA$;
+            state.cash = 100 + (state.upgrades.nestEgg.level * 50);
+            state.currentJobId = null; 
+            
+            for (let ticker in state.assets) {
+                state.assets[ticker].owned = 0;
+                state.assets[ticker].avgPrice = 0;
+                state.assets[ticker].price = state.assets[ticker].basePrice;
+                state.assets[ticker].change = 0;
+                state.assets[ticker].history = Array(25).fill(state.assets[ticker].basePrice);
+                animatedPrices[ticker] = state.assets[ticker].basePrice;
+            }
+
+            logMessage(`✨ SYSTEM FLUX: True Capitalist Ascension triggered. Gained ${formatNumber(gainedA$, true)} A$. Paradigm shifted.`);
+            switchTab('stocks');
+            updateUI();
+            renderJobs();
+            saveGame();
+        }
+
+        function animateRightPanelPrice(ticker, startVal, endVal) {
+            const duration = 400; 
+            const startTime = performance.now();
+
+            function step(now) {
+                if (state.selectedAsset !== ticker) return; 
+                
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentVal = startVal + (endVal - startVal) * progress;
+                animatedPrices[ticker] = currentVal;
+
+                const asset = state.assets[ticker];
+                const prefix = asset.type === 'stock' ? 'stock' : 'crypto';
+                const pPrice = document.getElementById(`pstat-${prefix}-price`);
+                if (pPrice) {
+                    pPrice.innerText = `$${formatNumber(currentVal)}`;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    animatedPrices[ticker] = endVal;
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        function simulateMarket() {
+            const upgradeLuck = state.upgrades.bullRun.level * 0.02;
+            const volMultiplier = 1.0 + (state.upgrades.volatile.level * 0.20);
+
+            for (let ticker in state.assets) {
+                const asset = state.assets[ticker];
+                const oldPrice = asset.price;
+                let changePercent = 0;
+
+                if (asset.type === 'stock') {
+                    const stockBias = 0.035 + upgradeLuck; 
+                    changePercent = (Math.random() - 0.485 + stockBias) * asset.volatility * volMultiplier;
+                } else {
+                    const cryptoBias = 0.0 + upgradeLuck;
+                    changePercent = (Math.random() - 0.5 + cryptoBias) * asset.volatility * volMultiplier;
+                }
+                
+                asset.price = asset.price * (1 + changePercent);
+                if (asset.price < 0.001) asset.price = 0.001; 
+                asset.change = changePercent * 100;
+
+                asset.history.push(asset.price);
+                if(asset.history.length > 30) asset.history.shift();
+
+                if (ticker === state.selectedAsset) {
+                    const currentVisualStart = animatedPrices[ticker] !== undefined ? animatedPrices[ticker] : oldPrice;
+                    animateRightPanelPrice(ticker, currentVisualStart, asset.price);
+                } else {
+                    animatedPrices[ticker] = asset.price;
+                }
+            }
+
+            if (state.currentJobId) {
+                const activeJob = state.jobs.find(j => j.id === state.currentJobId);
+                state.cash += activeJob.revenue;
+            }
+
+            if (state.upgrades.divine.level > 0) {
+                const reward = getPortfolioValue() * (0.001 * state.upgrades.divine.level); 
+                state.cash += reward;
+            }
+
+            updateUI();
+            drawChart();
+        }
+
+        // --- CANVAS RENDERING ENGINE ---
+        function drawChart() {
+            const ticker = state.selectedAsset;
+            if(!ticker) return;
+            const asset = state.assets[ticker];
+            
+            const canvas = document.getElementById(asset.type === 'stock' ? 'stock-canvas' : 'crypto-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            const data = asset.history;
+            const currentPrice = asset.price;
+
+            let distance = currentPrice * 0.35; 
+            
+            let stepInterval = 50; 
+            if (distance <= 0.2) stepInterval = 0.05;
+            else if (distance <= 1) stepInterval = 0.25;
+            else if (distance <= 10) stepInterval = 2.5;
+            else if (distance <= 30) stepInterval = 10;
+            else if (distance <= 100) stepInterval = 25;
+            else if (distance <= 250) stepInterval = 50;
+            else if (distance <= 1500) stepInterval = 250;
+            else if (distance <= 5000) stepInterval = 1000;
+            else if (distance <= 20000) stepInterval = 5000;
+            else stepInterval = 10000;
+
+            let absoluteDistance = Math.ceil(distance / stepInterval) * stepInterval;
+
+            let maxChartCeiling = currentPrice + absoluteDistance;
+            let minChartFloor = currentPrice - absoluteDistance;
+            
+            if (minChartFloor < 0) minChartFloor = 0;
+
+            const totalYRange = maxChartCeiling - minChartFloor;
+
+            const graphPaddingTop = 20;
+            const graphPaddingBottom = 15;
+            const effectiveHeight = rect.height - graphPaddingTop - graphPaddingBottom;
+
+            ctx.lineWidth = 1;
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'left';
+
+            let startStep = Math.floor(minChartFloor / stepInterval) * stepInterval;
+
+            for (let currentStep = startStep; currentStep <= maxChartCeiling + stepInterval; currentStep += stepInterval) {
+                if (currentStep < minChartFloor || currentStep > maxChartCeiling) continue;
+
+                const percentageOfTotalHeight = (currentStep - minChartFloor) / totalYRange;
+                const yPos = rect.height - graphPaddingBottom - (percentageOfTotalHeight * effectiveHeight);
+
+                ctx.strokeStyle = currentStep === 0 ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.06)';
+                ctx.beginPath();
+                ctx.moveTo(0, yPos);
+                ctx.lineTo(rect.width, yPos);
+                ctx.stroke();
+
+                ctx.fillStyle = currentStep === 0 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.45)';
+                ctx.fillText(`$${formatNumber(currentStep)}`, 6, yPos - 3);
+            }
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = asset.change >= 0 ? '#10b981' : '#ef4444';
+
+            for (let i = 0; i < data.length; i++) {
+                const x = (i / (data.length - 1)) * rect.width;
+                
+                let pointValue = data[i];
+                if (pointValue > maxChartCeiling) pointValue = maxChartCeiling;
+                if (pointValue < minChartFloor) pointValue = minChartFloor;
+
+                const normalizedPriceValue = (pointValue - minChartFloor) / totalYRange;
+                const y = rect.height - graphPaddingBottom - (normalizedPriceValue * effectiveHeight);
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.lineTo((data.length - 1) / (data.length - 1) * rect.width, rect.height);
+            ctx.lineTo(0, rect.height);
+            ctx.closePath();
+            let gradient = ctx.createLinearGradient(0, graphPaddingTop, 0, rect.height);
+            gradient.addColorStop(0, asset.change >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function renderJobs() {
+            let html = '';
+            const totalWorth = getPortfolioValue();
+            state.jobs.forEach(job => {
+                const isCurrent = state.currentJobId === job.id;
+                const isLocked = totalWorth < job.req;
+                html += `
+                    <div class="job-card ${isCurrent ? 'active-job' : ''}">
+                        <div>
+                            <strong>${job.name}</strong>
+                            <p style="margin-top:4px; font-size:0.9rem; opacity:0.8;">Yields +$${job.revenue}/cycle passively.</p>
+                        </div>
+                        <button ${isLocked || isCurrent ? 'disabled' : ''} onclick="selectJob('${job.id}')">
+                            ${isCurrent ? 'Active Contract' : isLocked ? `Locked (Req: $${formatNumber(job.req)})` : 'Sign Contract'}
+                        </button>
+                    </div>
+                `;
+            });
+            document.getElementById('jobs-container').innerHTML = html;
+        }
+
+        function updateUI() {
+            document.getElementById('stat-cash').innerText = `$${formatNumber(state.cash)}`;
+            document.getElementById('stat-ascended').innerText = `${formatNumber(state.ascendedCash, true)} A$`;
+            
+            const totalVal = getPortfolioValue();
+            const pendingA$ = calculatePendingA$();
+            const rbBtn = document.getElementById('rebirth-btn');
+            
+            if (totalVal >= REBIRTH_REQUIREMENT) {
+                rbBtn.disabled = false;
+                rbBtn.innerText = `Ascend Now! (+${formatNumber(pendingA$, true)} A$)`;
+            } else {
+                rbBtn.disabled = true;
+                rbBtn.innerText = `Rebirth (Req: $15.0k)`;
+            }
+
+            if (state.selectedAsset) {
+                const curAsset = state.assets[state.selectedAsset];
+                const prefix = curAsset.type === 'stock' ? 'stock' : 'crypto';
+                
+                const containerEl = document.getElementById(`panel-${prefix}-title`);
+                if (containerEl) {
+                    containerEl.innerHTML = `${curAsset.name} (<span style="color:var(--ascend-color)">${state.selectedAsset}</span>)`;
+                }
+
+                const pPrice = document.getElementById(`pstat-${prefix}-price`);
+                const pChange = document.getElementById(`pstat-${prefix}-change`);
+                const pOwned = document.getElementById(`pstat-${prefix}-owned`);
+                const pAvgBox = document.getElementById(`pstat-${prefix}-avg-box`);
+                const pAvg = document.getElementById(`pstat-${prefix}-avg`);
+
+                if (pPrice && animatedPrices[state.selectedAsset] !== undefined) {
+                    pPrice.innerText = `$${formatNumber(animatedPrices[state.selectedAsset])}`;
+                }
+                if(pOwned) pOwned.innerText = curAsset.owned;
+                if(pChange) {
+                    pChange.innerText = `${curAsset.change >= 0 ? '+' : ''}${curAsset.change.toFixed(2)}%`;
+                    pChange.className = curAsset.change >= 0 ? 'price-up' : 'price-down';
+                }
+
+                // Handle conditional row display and value rendering for historical entry points
+                if (curAsset.owned >= 1) {
+                    pAvgBox.style.display = 'flex';
+                    if (pAvg) pAvg.innerText = `$${formatNumber(curAsset.avgPrice)}`;
+                } else {
+                    pAvgBox.style.display = 'none';
+                }
+            }
+
+            let stocksHTML = '';
+            let cryptoHTML = '';
+
+            for (let ticker in state.assets) {
+                const asset = state.assets[ticker];
+                const changeClass = asset.change >= 0 ? 'price-up' : 'price-down';
+                const prefix = asset.change >= 0 ? '+' : '';
+                const isSel = state.selectedAsset === ticker ? 'class="selected-row"' : '';
+                
+                const rowHTML = `
+                    <tr id="row-${ticker}" ${isSel} onclick="selectAsset('${ticker}')">
+                        <td><strong>${ticker}</strong></td>
+                        <td>${asset.name}</td>
+                        <td>$${formatNumber(asset.price)}</td>
+                        <td class="${changeClass}">${prefix}${asset.change.toFixed(2)}%</td>
+                        <td>${asset.owned}</td>
+                    </tr>
+                `;
+
+                if (asset.type === 'stock') stocksHTML += rowHTML;
+                else cryptoHTML += rowHTML;
+            }
+
+            document.getElementById('stocks-body').innerHTML = stocksHTML;
+            document.getElementById('crypto-body').innerHTML = cryptoHTML;
+
+            for (let id in state.upgrades) {
+                const upg = state.upgrades[id];
+                const cost = getUpgradeCost(id);
+                const nodeEl = document.getElementById(`upg-${id}`);
+                const btnEl = document.getElementById(`btn-upg-${id}`);
+                const descEl = document.getElementById(`desc-${id}`);
+                
+                nodeEl.className = 'upgrade-node';
+                
+                if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 50} at launch.\nAdds +$50 starting money/lvl.`;
+                if(id === 'brokerage') descEl.innerText = `Current Fee: ${(getFeeMultiplier() * 100).toFixed(2)}%.\nRemoves 1% from standard fee/lvl.`;
+                if(id === 'bullRun') descEl.innerText = `Current Engine Luck: +${upg.level * 2}%\nIncreases drift trend vectors by +2%/lvl.`;
+                if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
+                if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
+
+                if (upg.maxLevel && upg.level >= upg.maxLevel) {
+                    nodeEl.classList.add('maxed');
+                    document.getElementById(`cost-${id}`).innerText = "MAXED";
+                    btnEl.innerText = 'Max Lvl';
+                    btnEl.disabled = true;
+                } else if (isNodeUnlocked(id)) {
+                    nodeEl.classList.add('unlocked');
+                    document.getElementById(`cost-${id}`).innerText = `${formatNumber(cost, true)} A$`;
+                    btnEl.innerText = `Upgrade (Lvl ${upg.level})`;
+                    btnEl.disabled = state.ascendedCash < cost;
+                } else {
+                    btnEl.innerText = 'Locked';
+                    btnEl.disabled = true;
+                }
+            }
+        }
+
+        // --- CORE RUNTIMES ---
+        loadGame(); 
+        
+        setInterval(simulateMarket, 1500);
+        setInterval(saveGame, 5000); 
+        
+        if (state.themeSetting === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+            document.getElementById('theme-toggle').innerText = 'Dark Mode';
+        }
+
+        selectAsset(state.selectedAsset || 'AAPL');
+        renderJobs();
+        updateUI();
+    </script>
+</body>
+</html>
