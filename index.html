@@ -505,7 +505,7 @@
             ascendedCash: 0,
             formatSetting: 'compact', 
             themeSetting: 'dark',
-            selectedAsset: 'ETH', 
+            selectedAsset: 'AAPL', 
             currentJobId: null,
             isPaused: false,
             assets: {
@@ -697,6 +697,10 @@
         function togglePause() {
             if (state.upgrades.freezeTime.level <= 0) return;
             state.isPaused = !state.isPaused;
+            updatePauseButtonUI();
+        }
+
+        function updatePauseButtonUI() {
             const pauseBtn = document.getElementById('pause-btn');
             if (state.isPaused) {
                 pauseBtn.innerText = "Resume Cycles";
@@ -849,7 +853,13 @@
             state.ascendedCash += gainedA$;
             state.cash = 100 + (state.upgrades.nestEgg.level * 100);
             state.currentJobId = null; 
-            state.isPaused = false; // Reset pause status on fresh rebirth
+            
+            // Check if Temporal Freeze is unlocked to automatically pause cycles at start of run
+            if (state.upgrades.freezeTime.level > 0) {
+                state.isPaused = true;
+            } else {
+                state.isPaused = false;
+            }
             
             for (let ticker in state.assets) {
                 state.assets[ticker].owned = 0;
@@ -863,6 +873,7 @@
             logMessage(`✨ SYSTEM FLUX: True Capitalist Ascension triggered. Gained ${formatNumber(gainedA$, true)} A$. Paradigm shifted.`);
             switchTab('crypto');
             updateUI();
+            updatePauseButtonUI();
             renderJobs();
             saveGame();
         }
@@ -1207,7 +1218,13 @@
 
         selectAsset(state.selectedAsset || 'AAPL');
         renderJobs();
-        updateUI();
+        
+        // Ensure UI styling matches pause state on initial load
+        if (state.isPaused && state.upgrades.freezeTime.level > 0) {
+            updatePauseButtonUI();
+        } else {
+            updateUI();
+        }
     </script>
 </body>
 </html>
