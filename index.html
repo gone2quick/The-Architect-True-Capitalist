@@ -626,9 +626,14 @@
                 return `${base.toFixed(2)}e${exponent}`;
             } else {
                 if (num < 1000) return num.toFixed(2);
-                const suffixes = ["", "k", "m", "b", "t", "q", "Sx"];
+                const suffixes = ["", "k", "m", "b", "t", "q", "Sx", "Sp", "Oc", "No", "Dc"];
                 const i = Math.floor(Math.log10(num) / 3);
-                return (num / Math.pow(10, i * 3)).toFixed(2) + suffixes[i];
+                
+                if (i < suffixes.length) {
+                    return (num / Math.pow(10, i * 3)).toFixed(2) + suffixes[i];
+                } else {
+                    return (num / Math.pow(10, i * 3)).toFixed(2) + "e" + (i * 3);
+                }
             }
         }
 
@@ -650,7 +655,6 @@
             }
         }
 
-        // Returns dynamic current pay for jobs based on level of Syndicate Leverage upgrade
         function getJobRevenue(job) {
             const multiplier = 1 + (state.upgrades.leverage.level * 0.50);
             return job.revenue * multiplier;
@@ -670,7 +674,6 @@
             drawChart();
         }
 
-        // Modified to instantly reflect updated job payouts on formatting switch
         function toggleFormat() {
             state.formatSetting = (state.formatSetting === 'compact') ? 'scientific' : 'compact';
             document.getElementById('format-toggle').innerText = `Format: ${state.formatSetting.charAt(0).toUpperCase() + state.formatSetting.slice(1)}`;
@@ -727,7 +730,7 @@
 
                 logMessage(`Acquired ${count} ${ticker} for $${formatNumber(cost)} (Fee: $${formatNumber(fee)})`);
                 updateUI();
-                renderJobs(); // Instantly update active jobs if portfolio changes
+                renderJobs(); 
             } else {
                 logMessage(`Insufficient liquid capability.`);
             }
@@ -757,7 +760,7 @@
             state.cash += netEarnings;
             logMessage(`Liquidated ${count} ${ticker} for $${formatNumber(revenue)} (Fee: $${formatNumber(fee)})`);
             updateUI();
-            renderJobs(); // Instantly update active jobs if portfolio changes
+            renderJobs(); 
         }
 
         function getPortfolioValue() {
@@ -787,7 +790,7 @@
                 upg.level++;
                 logMessage(`Architect Protocol Upgraded: [${id}] integrated to Lvl ${upg.level}`);
                 updateUI();
-                renderJobs(); // Updates job payouts instantly if Syndicate Leverage was bought
+                renderJobs(); 
             }
         }
 
@@ -901,7 +904,7 @@
             }
 
             updateUI();
-            renderJobs(); // Run continuously on the loop to dynamic lock/unlock requirements live
+            renderJobs(); 
             drawChart();
         }
 
@@ -928,27 +931,22 @@
 
             let distance = currentPrice * 0.35; 
             
-			// Replace your entire if-else block with this:
-			let stepInterval;
-			if (distance <= 0) {
-			    stepInterval = 0.05;
-			} else {
-			    // 1. Get the order of magnitude (e.g., 100 -> 2, 1500 -> 3)
- 				   const magnitude = Math.floor(Math.log10(distance));
-    
- 			   // 2. Normalize the distance to a 1-10 range to select a multiplier
- 			   const normalized = distance / Math.pow(10, magnitude);
-    
-			    // 3. Define multipliers based on your pattern (0.05, 0.25, 2.5, 5, 10...)
-			    let multiplier;
-			    if (normalized <= 0.2) multiplier = 0.05;
-			    else if (normalized <= 1.0) multiplier = 0.25;
-			    else if (normalized <= 3.0) multiplier = 2.5;
-  			  else if (normalized <= 10.0) multiplier = 10;
-			    else multiplier = 50; 
+            let stepInterval;
+            if (distance <= 0) {
+                stepInterval = 0.05;
+            } else {
+                const magnitude = Math.pow(10, Math.floor(Math.log10(distance)));
+                const normalized = distance / magnitude;
+                
+                let multiplier;
+                if (normalized <= 0.2) multiplier = 0.05;
+                else if (normalized <= 0.5) multiplier = 0.1;
+                else if (normalized <= 1.0) multiplier = 0.25;
+                else if (normalized <= 3.0) multiplier = 1.0;
+                else multiplier = 5.0;
 
-			    stepInterval = multiplier * Math.pow(10, magnitude - 1);
-			}
+                stepInterval = multiplier * magnitude;
+            }
 			
             let absoluteDistance = Math.ceil(distance / stepInterval) * stepInterval;
 
@@ -1014,7 +1012,6 @@
             ctx.fill();
         }
 
-        // Renders job cards with updated current pay rates based on upgrades
         function renderJobs() {
             let html = '';
             const totalWorth = getPortfolioValue();
