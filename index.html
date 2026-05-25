@@ -674,6 +674,7 @@
             }
         }
 
+        // --- CALC JOB PASSIVE INCOME MULTIPLIER ---
         function getJobRevenue(job) {
             const multiplier = 1 + (state.upgrades.leverage.level * 0.50);
             return job.revenue * multiplier;
@@ -722,6 +723,7 @@
             renderJobs();
         }
 
+        // --- INTERACTION LOG MESSAGES ---
         function logMessage(msg) {
             const box = document.getElementById('log-box');
             box.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>` + box.innerHTML;
@@ -854,7 +856,6 @@
             state.cash = 100 + (state.upgrades.nestEgg.level * 100);
             state.currentJobId = null; 
             
-            // Check if Temporal Freeze is unlocked to automatically pause cycles at start of run
             if (state.upgrades.freezeTime.level > 0) {
                 state.isPaused = true;
             } else {
@@ -908,18 +909,20 @@
         }
 
         function simulateMarket() {
-            // Check if game is paused before progressing cycles
             if (state.isPaused && state.upgrades.freezeTime.level > 0) {
                 return;
             }
-
-            const upgradeLuck = state.upgrades.bullRun.level * 0.02;
-            const volMultiplier = 1.0 + (state.upgrades.volatile.level * 0.20);
 
             for (let ticker in state.assets) {
                 const asset = state.assets[ticker];
                 const oldPrice = asset.price;
                 let changePercent = 0;
+
+                // Dynamically clamp upgrade effectiveness if running on a cryptocurrency asset type
+                const effectDampener = (asset.type === 'crypto') ? 0.10 : 1.00;
+                
+                const upgradeLuck = (state.upgrades.bullRun.level * 0.02) * effectDampener;
+                const volMultiplier = 1.0 + ((state.upgrades.volatile.level * 0.20) * effectDampener);
 
                 if (asset.type === 'stock') {
                     const stockBias = 0 + upgradeLuck; 
@@ -1106,7 +1109,6 @@
                 rbBtn.innerText = `Rebirth (Req: $15.0k)`;
             }
 
-            // Show or hide pause button based on Temporal Freeze level
             if (state.upgrades.freezeTime.level > 0) {
                 pauseBtn.style.display = 'inline-block';
             } else {
@@ -1219,7 +1221,6 @@
         selectAsset(state.selectedAsset || 'AAPL');
         renderJobs();
         
-        // Ensure UI styling matches pause state on initial load
         if (state.isPaused && state.upgrades.freezeTime.level > 0) {
             updatePauseButtonUI();
         } else {
