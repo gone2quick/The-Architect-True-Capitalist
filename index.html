@@ -497,13 +497,13 @@
                 'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(90) },
                 'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.02, history: Array(25).fill(100) },
                 'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.40, history: Array(25).fill(30000) }, 
-                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.55, history: Array(25).fill(1800) },
+                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.50, history: Array(25).fill(1800) },
                 'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.85, history: Array(25).fill(0.10) }
             },
             upgrades: {
-                nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1 },
+                nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 199 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
-                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, requires: ['nestEgg', 'brokerage'] },
+                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2,, maxLevel: 50, requires: ['nestEgg', 'brokerage'] },
                 bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, requires: ['bullRun', 'volatile'] }
