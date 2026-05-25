@@ -348,7 +348,6 @@
             <button class="tab-btn" onclick="switchTab('upgrades')">Architect Upgrades</button>
         </div>
 
-        <!-- STOCKS TAB -->
         <div id="tab-stocks" class="tab-content active">
             <div class="market-layout">
                 <table class="market-table">
@@ -385,7 +384,6 @@
             </div>
         </div>
 
-        <!-- CRYPTO TAB -->
         <div id="tab-crypto" class="tab-content">
             <div class="market-layout">
                 <table class="market-table">
@@ -422,7 +420,6 @@
             </div>
         </div>
 
-        <!-- JOBS TAB -->
         <div id="tab-jobs" class="tab-content">
             <div style="text-align: center; margin-bottom: 15px;">
                 <p>Secure employment to extract passive streams of raw cash payload every cycle.</p>
@@ -430,13 +427,11 @@
             <div class="jobs-grid" id="jobs-container"></div>
         </div>
 
-        <!-- UPGRADES TAB -->
         <div id="tab-upgrades" class="tab-content">
             <div style="text-align: center; margin-bottom: 15px;">
                 <p>Spend your accumulated <strong>A$</strong> to permanently rewrite core code parameters. Levels scale infinitely.</p>
             </div>
             <div class="tree-container">
-                <!-- Layer 1 -->
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-nestEgg">
                         <h4>Subsidized Kickstart</h4>
@@ -451,8 +446,13 @@
                         <button onclick="buyUpgrade('brokerage')" id="btn-upg-brokerage">Upgrade</button>
                     </div>
                 </div>
-                <!-- Layer 2 -->
                 <div class="tree-layer">
+                    <div class="upgrade-node" id="upg-leverage">
+                        <h4>Syndicate Leverage</h4>
+                        <p id="desc-leverage">Amplifies active job income by +50% per level.</p>
+                        <span class="node-cost" id="cost-leverage">0.50 A$</span>
+                        <button onclick="buyUpgrade('leverage')" id="btn-upg-leverage">Locked</button>
+                    </div>
                     <div class="upgrade-node" id="upg-bullRun">
                         <h4>Sentiment Override</h4>
                         <p id="desc-bullRun">Increases general trade luck indices by +5% per level.</p>
@@ -466,7 +466,6 @@
                         <button onclick="buyUpgrade('volatile')" id="btn-upg-volatile">Locked</button>
                     </div>
                 </div>
-                <!-- Layer 3 -->
                 <div class="tree-layer">
                     <div class="upgrade-node" id="upg-divine">
                         <h4>True Capital Siphon</h4>
@@ -504,6 +503,7 @@
             upgrades: {
                 nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
+                leverage: { level: 0, baseCost: 2.5, scaling: 1.6, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 bullRun: { level: 0, baseCost: 3.0, scaling: 1.8, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 volatile: { level: 0, baseCost: 4.0, scaling: 1.7, layer: 2, requires: ['nestEgg', 'brokerage'] },
                 divine: { level: 0, baseCost: 10.0, scaling: 2.2, layer: 3, requires: ['bullRun', 'volatile'] }
@@ -608,7 +608,7 @@
         function calculatePendingA$() {
             const totalVal = getPortfolioValue();
             if (totalVal < REBIRTH_REQUIREMENT) return 0;
-            let multiplier = 1.0 / Math.pow(15000, 0.613);
+            let multiplier = 0.15 / Math.pow(15000, 0.613);
             return multiplier * Math.pow(totalVal, 0.613);
         }
 
@@ -650,6 +650,12 @@
             }
         }
 
+        // Returns dynamic current pay for jobs based on level of Syndicate Leverage upgrade
+        function getJobRevenue(job) {
+            const multiplier = 1 + (state.upgrades.leverage.level * 0.50);
+            return job.revenue * multiplier;
+        }
+
         function toggleTheme() {
             const body = document.body;
             if (body.getAttribute('data-theme') === 'dark') {
@@ -664,10 +670,12 @@
             drawChart();
         }
 
+        // Modified to instantly reflect updated job payouts on formatting switch
         function toggleFormat() {
             state.formatSetting = (state.formatSetting === 'compact') ? 'scientific' : 'compact';
             document.getElementById('format-toggle').innerText = `Format: ${state.formatSetting.charAt(0).toUpperCase() + state.formatSetting.slice(1)}`;
             updateUI();
+            renderJobs();
         }
 
         function logMessage(msg) {
@@ -719,6 +727,7 @@
 
                 logMessage(`Acquired ${count} ${ticker} for $${formatNumber(cost)} (Fee: $${formatNumber(fee)})`);
                 updateUI();
+                renderJobs(); // Instantly update active jobs if portfolio changes
             } else {
                 logMessage(`Insufficient liquid capability.`);
             }
@@ -748,6 +757,7 @@
             state.cash += netEarnings;
             logMessage(`Liquidated ${count} ${ticker} for $${formatNumber(revenue)} (Fee: $${formatNumber(fee)})`);
             updateUI();
+            renderJobs(); // Instantly update active jobs if portfolio changes
         }
 
         function getPortfolioValue() {
@@ -777,6 +787,7 @@
                 upg.level++;
                 logMessage(`Architect Protocol Upgraded: [${id}] integrated to Lvl ${upg.level}`);
                 updateUI();
+                renderJobs(); // Updates job payouts instantly if Syndicate Leverage was bought
             }
         }
 
@@ -852,7 +863,6 @@
                 const oldPrice = asset.price;
                 let changePercent = 0;
 
-                //asymmetrical volatility boundaries
                 if (asset.type === 'stock') {
                     const stockBias = 0 + upgradeLuck; 
                     changePercent = (Math.random() - 0.40 + stockBias) * asset.volatility * volMultiplier;
@@ -862,7 +872,7 @@
                     const cryptoBias = 0 + upgradeLuck;
                     changePercent = (Math.random() - 0.50 + cryptoBias) * asset.volatility * volMultiplier;
                     if (changePercent > 10.00) changePercent = 10.00;
-                    if (changePercent < -0.25) changePercent = -0.25;
+                    if (changePercent < -0.90) changePercent = -0.50;
                 }
                 
                 asset.price = asset.price * (1 + changePercent);
@@ -882,7 +892,7 @@
 
             if (state.currentJobId) {
                 const activeJob = state.jobs.find(j => j.id === state.currentJobId);
-                state.cash += activeJob.revenue;
+                state.cash += getJobRevenue(activeJob);
             }
 
             if (state.upgrades.divine.level > 0) {
@@ -891,6 +901,7 @@
             }
 
             updateUI();
+            renderJobs(); // Run continuously on the loop to dynamic lock/unlock requirements live
             drawChart();
         }
 
@@ -927,7 +938,10 @@
             else if (distance <= 1500) stepInterval = 250;
             else if (distance <= 5000) stepInterval = 1000;
             else if (distance <= 20000) stepInterval = 5000;
-            else stepInterval = 10000;
+			else if (distance <= 100000) stepInterval = 10000;
+			else if (distance <= 1000000) stepInterval = 100000;
+			else if (distance <= 10000000) stepInterval = 1000000;
+            else stepInterval = 100000000;
 
             let absoluteDistance = Math.ceil(distance / stepInterval) * stepInterval;
 
@@ -993,17 +1007,19 @@
             ctx.fill();
         }
 
+        // Renders job cards with updated current pay rates based on upgrades
         function renderJobs() {
             let html = '';
             const totalWorth = getPortfolioValue();
             state.jobs.forEach(job => {
                 const isCurrent = state.currentJobId === job.id;
                 const isLocked = totalWorth < job.req;
+                const currentRevenue = getJobRevenue(job);
                 html += `
                     <div class="job-card ${isCurrent ? 'active-job' : ''}">
                         <div>
                             <strong>${job.name}</strong>
-                            <p style="margin-top:4px; font-size:0.9rem; opacity:0.8;">Yields +$${job.revenue}/cycle passively.</p>
+                            <p style="margin-top:4px; font-size:0.9rem; opacity:0.8;">Yields +$${formatNumber(currentRevenue)}/cycle passively.</p>
                         </div>
                         <button ${isLocked || isCurrent ? 'disabled' : ''} onclick="selectJob('${job.id}')">
                             ${isCurrent ? 'Active Contract' : isLocked ? `Locked (Req: $${formatNumber(job.req)})` : 'Sign Contract'}
@@ -1099,6 +1115,7 @@
                 
                 if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 50} at launch.\nAdds +$50 starting money/lvl.`;
                 if(id === 'brokerage') descEl.innerText = `Current Fee: ${(getFeeMultiplier() * 100).toFixed(2)}%.\nRemoves 1% from standard fee/lvl.`;
+                if(id === 'leverage') descEl.innerText = `Current Mult: +${upg.level * 50}%\nAmplifies base job income payload by +50%/lvl.`;
                 if(id === 'bullRun') descEl.innerText = `Current Engine Luck: +${upg.level * 2}%\nIncreases drift trend vectors by +2%/lvl.`;
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
                 if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
