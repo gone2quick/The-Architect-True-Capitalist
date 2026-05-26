@@ -346,7 +346,7 @@
                 <button onclick="wipeSave()" style="border-color: var(--danger-color); color: var(--danger-color);">Hard Reset</button>
                 <button id="theme-toggle" onclick="toggleTheme()">Light Mode</button>
                 <button id="format-toggle" onclick="toggleFormat()">Format: Compact</button>
-                <button id="rebirth-btn" class="rebirth-btn" onclick="attemptRebirth()">Rebirth (Req: $8.00k)</button>
+                <button id="rebirth-btn" class="rebirth-btn" onclick="attemptRebirth()">Rebirth (Req: $15.0k)</button>
                 <button id="pause-btn" class="pause-btn" onclick="togglePause()" style="display: none;">Pause Cycles</button>
             </div>
         </header>
@@ -495,12 +495,6 @@
                         <span class="node-cost" id="cost-unregulated">50.00 A$</span>
                         <button onclick="buyUpgrade('unregulated')" id="btn-upg-unregulated">Locked</button>
                     </div>
-                    <div class="upgrade-node" id="upg-exchangeRate">
-                        <h4>Subverted Exchange Rate</h4>
-                        <p id="desc-exchangeRate">Lowers ascension cash targets by 15% and magnifies A$ yields per level.</p>
-                        <span class="node-cost" id="cost-exchangeRate">75.00 A$</span>
-                        <button onclick="buyUpgrade('exchangeRate')" id="btn-upg-exchangeRate">Locked</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -536,15 +530,14 @@
                 'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.85, history: Array(25).fill(0.10) }
             },
             upgrades: {
-                nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 200 },
+                nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 199 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
                 freezeTime: { level: 0, baseCost: 10.0, scaling: 5.0, layer: 1, maxLevel: 1 },
                 leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 48, requires: ['nestEgg', 'brokerage'] },
                 bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage'] },
                 volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, maxLevel: 625, requires: ['nestEgg', 'brokerage'] },
                 divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['bullRun', 'volatile'] },
-                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] },
-                exchangeRate: { level: 0, baseCost: 75.0, scaling: 2.5, layer: 3, maxLevel: 10, requires: ['bullRun', 'volatile'] }
+                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] }
             },
             jobs: [
                 { id: 'intern', name: 'Paid Algorithm Intern', revenue: 2, req: 0 },
@@ -555,13 +548,8 @@
             ]
         };
 
+        const REBIRTH_REQUIREMENT = 8000;
         let animatedPrices = {}; 
-
-		function getRebirthRequirement() {
-			// Smoother decrease per level (8% reduction instead of 15%)
-    		let discount = Math.pow(0.92, state.upgrades.exchangeRate?.level || 0);
-    		return Math.max(1000, 8000 * discount); 
-		}
 
         // --- LOCAL STORAGE SAVE & LOAD ---
         function saveGame() {
@@ -651,22 +639,18 @@
             }
         }
 
-		function calculatePendingA$() {
-    		const totalVal = getPortfolioValue();
-    		const requirement = getRebirthRequirement();
-    		if (totalVal < requirement) return 0;
-    		const upgradeLevel = state.upgrades.exchangeRate?.level || 0;
-    		let efficiencyMultiplier = Math.pow(0.92, upgradeLevel);
-    		let dynamicDivisor = 15000 * efficiencyMultiplier;
-    		let multiplier = 1 / Math.pow(dynamicDivisor, powerScaling);
-    		return Math.round(multiplier * Math.pow(totalVal, powerScaling));
-		}
-		
+        function calculatePendingA$() {
+            const totalVal = getPortfolioValue();
+            if (totalVal < REBIRTH_REQUIREMENT) return 0;
+            let multiplier = 1 / Math.pow(15000, 0.613);
+            return multiplier * Math.pow(totalVal, 0.613);
+        }
+
         function getUpgradeCost(id) {
             let upg = state.upgrades[id];
             return upg.baseCost * Math.pow(upg.scaling, upg.level);
         }
-		
+
         function formatNumber(num, isAscended = false) {
             if (isAscended && num < 1 && num > 0) return num.toFixed(4);
             if (state.formatSetting === 'scientific') {
@@ -891,8 +875,7 @@
 
         function attemptRebirth() {
             const totalVal = getPortfolioValue();
-            const requirement = getRebirthRequirement();
-            if (totalVal < requirement) {
+            if (totalVal < REBIRTH_REQUIREMENT) {
                 logMessage("Ascension denied. Minimum portfolio valuation requirement mismatch.");
                 return;
             }
@@ -918,7 +901,7 @@
             }
 
             logMessage(`✨ SYSTEM FLUX: True Capitalist Ascension triggered. Gained ${formatNumber(gainedA$, true)} A$. Paradigm shifted.`);
-            switchTab('stocks');
+            switchTab('crypto');
             updateUI();
             updatePauseButtonUI();
             renderJobs();
@@ -966,6 +949,7 @@
                 const oldPrice = asset.price;
                 let changePercent = 0;
 
+                // Restored 10% dampener condition for cryptocurrency assets
                 const effectDampener = (asset.type === 'crypto') ? 0.10 : 1.00;
                 
                 const upgradeLuck = (state.upgrades.bullRun.level * 0.02) * effectDampener;
@@ -1147,14 +1131,13 @@
             const pendingA$ = calculatePendingA$();
             const rbBtn = document.getElementById('rebirth-btn');
             const pauseBtn = document.getElementById('pause-btn');
-            const requirement = getRebirthRequirement();
             
-            if (totalVal >= requirement) {
+            if (totalVal >= REBIRTH_REQUIREMENT) {
                 rbBtn.disabled = false;
                 rbBtn.innerText = `Ascend Now! (+${formatNumber(pendingA$, true)} A$)`;
             } else {
                 rbBtn.disabled = true;
-                rbBtn.innerText = `Rebirth (Req: $${formatNumber(requirement)})`;
+                rbBtn.innerText = `Rebirth (Req: $15.0k)`;
             }
 
             if (state.upgrades.freezeTime.level > 0) {
@@ -1240,9 +1223,8 @@
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
                 if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
                 if(id === 'unregulated') descEl.innerText = `Unlocks high-gain stocks: [${upg.level}/3]\nLvl 1: NVDA, Lvl 2: AMD, Lvl 3: INTC.`;
-				if(id === 'exchangeRate') descEl.innerText = `Req: -$${formatNumber(8000 - Math.max(1000, 8000 * Math.pow(0.92, upg.level || 0)))} | Yield: +${((Math.pow(1.08, upg.level || 0) - 1) * 100).toFixed(0)}%\nOptimizes conversion formula pipelines.`;
-                
-				if (upg.maxLevel && upg.level >= upg.maxLevel) {
+
+                if (upg.maxLevel && upg.level >= upg.maxLevel) {
                     nodeEl.classList.add('maxed');
                     document.getElementById(`cost-${id}`).innerText = "MAXED";
                     btnEl.innerText = 'Max Lvl';
