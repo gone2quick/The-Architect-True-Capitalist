@@ -582,7 +582,7 @@
                 leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 48, requires: ['nestEgg', 'brokerage', 'autoBuy'] },
                 bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage', 'autoBuy'] },
                 volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 3, maxLevel: 500, requires: ['freezeTime', 'leverage', 'bullRun'] },
-                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['freezeTime', 'leverage', 'bullRun'] },
+                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 500, requires: ['freezeTime', 'leverage', 'bullRun'] },
                 unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['freezeTime', 'leverage', 'bullRun'] },
                 macroShift: { level: 0, baseCost: 75.0, scaling: 2.5, layer: 4, maxLevel: 150, requires: ['volatile', 'divine', 'unregulated'] }
             },
