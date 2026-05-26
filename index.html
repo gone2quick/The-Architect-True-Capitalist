@@ -557,11 +557,11 @@
 
         let animatedPrices = {}; 
 
-        // --- DYNAMIC REBIRTH CONFIGURATION ---
-        function getRebirthRequirement() {
-            let discount = Math.pow(0.85, state.upgrades.exchangeRate?.level || 0);
-            return Math.max(1000, 8000 * discount); 
-        }
+		function getRebirthRequirement() {
+			// Smoother decrease per level (8% reduction instead of 15%)
+    		let discount = Math.pow(0.92, state.upgrades.exchangeRate?.level || 0);
+    		return Math.max(1000, 8000 * discount); 
+		}
 
         // --- LOCAL STORAGE SAVE & LOAD ---
         function saveGame() {
@@ -651,17 +651,24 @@
             }
         }
 
-        function calculatePendingA$() {
-            const totalVal = getPortfolioValue();
-            const requirement = getRebirthRequirement();
-            if (totalVal < requirement) return 0;
-            
-            let efficiencyMultiplier = Math.pow(0.80, state.upgrades.exchangeRate.level);
-            let dynamicDivisor = 15000 * efficiencyMultiplier;
-            
-            let multiplier = 1 / Math.pow(dynamicDivisor, 0.613);
-            return multiplier * Math.pow(totalVal, 0.613);
-        }
+		function calculatePendingA$() {
+    		const totalVal = getPortfolioValue();
+    		const requirement = getRebirthRequirement();
+    		if (totalVal < requirement) return 0;
+    
+    		// Fallback to 0 if exchangeRate or level is undefined
+    		const upgradeLevel = state.upgrades.exchangeRate?.level || 0;
+    
+    		// Lowered the efficiency decrease to 8% so the divisor stays healthier
+    		let efficiencyMultiplier = Math.pow(0.92, upgradeLevel);
+    		let dynamicDivisor = 15000 * efficiencyMultiplier;
+    
+    		// Buffed the scaling power from 0.613 to 0.68 for significantly higher gains
+    		const powerScaling = 0.68;
+    		let multiplier = 1 / Math.pow(dynamicDivisor, powerScaling);
+    
+    		return Math.round(multiplier * Math.pow(totalVal, powerScaling));
+		}
 
         // Modified function to accurately calculate dynamic costs
         function getUpgradeCost(id) {
