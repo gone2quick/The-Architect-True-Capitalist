@@ -639,11 +639,23 @@
             }
         }
 
+        function getRebirthRequirement() {
+            let discount = Math.pow(0.92, state.upgrades.exchangeRate?.level || 0);
+            return Math.max(1000, 8000 * discount); 
+        }
+
         function calculatePendingA$() {
             const totalVal = getPortfolioValue();
-            if (totalVal < REBIRTH_REQUIREMENT) return 0;
-            let multiplier = 1 / Math.pow(15000, 0.613);
-            return multiplier * Math.pow(totalVal, 0.613);
+            const requirement = getRebirthRequirement();
+            if (totalVal < requirement) return 0;
+            
+            const upgradeLevel = state.upgrades.exchangeRate?.level || 0;
+            let efficiencyMultiplier = Math.pow(0.92, upgradeLevel);
+            let dynamicDivisor = 15000 * efficiencyMultiplier;
+            
+            const powerScaling = 0.68;
+            let multiplier = 1 / Math.pow(dynamicDivisor, powerScaling);
+            return Math.round(multiplier * Math.pow(totalVal, powerScaling));
         }
 
         function getUpgradeCost(id) {
@@ -875,7 +887,8 @@
 
         function attemptRebirth() {
             const totalVal = getPortfolioValue();
-            if (totalVal < REBIRTH_REQUIREMENT) {
+            const requirement = getRebirthRequirement();
+            if (totalVal < requirement) {
                 logMessage("Ascension denied. Minimum portfolio valuation requirement mismatch.");
                 return;
             }
@@ -1132,12 +1145,13 @@
             const rbBtn = document.getElementById('rebirth-btn');
             const pauseBtn = document.getElementById('pause-btn');
             
-            if (totalVal >= REBIRTH_REQUIREMENT) {
+            const requirement = getRebirthRequirement();
+            if (totalVal >= requirement) {
                 rbBtn.disabled = false;
                 rbBtn.innerText = `Ascend Now! (+${formatNumber(pendingA$, true)} A$)`;
             } else {
                 rbBtn.disabled = true;
-                rbBtn.innerText = `Rebirth (Req: $15.0k)`;
+                rbBtn.innerText = `Rebirth (Req: $${formatNumber(requirement)})`;
             }
 
             if (state.upgrades.freezeTime.level > 0) {
@@ -1223,6 +1237,7 @@
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
                 if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
                 if(id === 'unregulated') descEl.innerText = `Unlocks high-gain stocks: [${upg.level}/3]\nLvl 1: NVDA, Lvl 2: AMD, Lvl 3: INTC.`;
+                if(id === 'exchangeRate') descEl.innerText = `Req: -$${formatNumber(8000 - Math.max(1000, 8000 * Math.pow(0.92, upg.level || 0)))} | Yield: +${((Math.pow(1.08, upg.level || 0) - 1) * 100).toFixed(0)}%\nOptimizes conversion formula pipelines.`;
 
                 if (upg.maxLevel && upg.level >= upg.maxLevel) {
                     nodeEl.classList.add('maxed');
