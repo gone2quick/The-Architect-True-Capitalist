@@ -495,6 +495,12 @@
                         <span class="node-cost" id="cost-unregulated">50.00 A$</span>
                         <button onclick="buyUpgrade('unregulated')" id="btn-upg-unregulated">Locked</button>
                     </div>
+                    <div class="upgrade-node" id="upg-macroShift">
+                        <h4>Macroeconomic Paradigm Shift</h4>
+                        <p id="desc-macroShift">Increases A$ conversion ratios by +8% per level.</p>
+                        <span class="node-cost" id="cost-macroShift">75.00 A$</span>
+                        <button onclick="buyUpgrade('macroShift')" id="btn-upg-macroShift">Locked</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -537,7 +543,8 @@
                 bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage'] },
                 volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, maxLevel: 625, requires: ['nestEgg', 'brokerage'] },
                 divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['bullRun', 'volatile'] },
-                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] }
+                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] },
+                macroShift: { level: 0, baseCost: 75.0, scaling: 2.5, layer: 3, maxLevel: 100, requires: ['bullRun', 'volatile'] }
             },
             jobs: [
                 { id: 'intern', name: 'Paid Algorithm Intern', revenue: 2, req: 0 },
@@ -642,8 +649,14 @@
         function calculatePendingA$() {
             const totalVal = getPortfolioValue();
             if (totalVal < REBIRTH_REQUIREMENT) return 0;
+            
+            // Baseline conversion algorithm
             let multiplier = 1 / Math.pow(15000, 0.613);
-            return multiplier * Math.pow(totalVal, 0.613);
+            let baseA$ = multiplier * Math.pow(totalVal, 0.613);
+            
+            // Apply direct +8% compounding ratio bonus per level
+            let upgradeBonus = Math.pow(1.08, state.upgrades.macroShift.level);
+            return baseA$ * upgradeBonus;
         }
 
         function getUpgradeCost(id) {
@@ -716,7 +729,6 @@
             drawChart();
         }
 
-        // --- PAUSE MECHANIC TOGGLE ---
         function togglePause() {
             if (state.upgrades.freezeTime.level <= 0) return;
             state.isPaused = !state.isPaused;
@@ -949,7 +961,6 @@
                 const oldPrice = asset.price;
                 let changePercent = 0;
 
-                // Restored 10% dampener condition for cryptocurrency assets
                 const effectDampener = (asset.type === 'crypto') ? 0.10 : 1.00;
                 
                 const upgradeLuck = (state.upgrades.bullRun.level * 0.02) * effectDampener;
@@ -1223,6 +1234,7 @@
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
                 if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
                 if(id === 'unregulated') descEl.innerText = `Unlocks high-gain stocks: [${upg.level}/3]\nLvl 1: NVDA, Lvl 2: AMD, Lvl 3: INTC.`;
+                if(id === 'macroShift') descEl.innerText = `Current Bonus: +${((Math.pow(1.08, upg.level) - 1) * 100).toFixed(1)}%\nIncreases A$ conversion ratios by +8%/lvl.`;
 
                 if (upg.maxLevel && upg.level >= upg.maxLevel) {
                     nodeEl.classList.add('maxed');
