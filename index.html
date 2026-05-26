@@ -246,6 +246,30 @@
             gap: 8px;
         }
 
+        .autobuy-container {
+            display: none;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 10px;
+            margin-top: 4px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .autobuy-btn {
+            width: 100%;
+            padding: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-color: var(--border-color);
+        }
+
+        .autobuy-btn.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
         .jobs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -390,6 +414,9 @@
                         <button onclick="sellActiveAsset(1)">Sell 1</button>
                         <button onclick="sellActiveAsset('MAX')">Sell Max</button>
                     </div>
+                    <div class="autobuy-container" id="stock-autobuy-row">
+                        <button id="stock-autobuy-toggle" class="autobuy-btn" onclick="toggleAutoBuy()">Auto-Buy Max: OFF</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -426,6 +453,9 @@
                         <button onclick="sellActiveAsset(1)">Sell 1</button>
                         <button onclick="sellActiveAsset('MAX')">Sell Max</button>
                     </div>
+                    <div class="autobuy-container" id="crypto-autobuy-row">
+                        <button id="crypto-autobuy-toggle" class="autobuy-btn" onclick="toggleAutoBuy()">Auto-Buy Max: OFF</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -455,14 +485,20 @@
                         <span class="node-cost" id="cost-brokerage">0.10 A$</span>
                         <button onclick="buyUpgrade('brokerage')" id="btn-upg-brokerage">Upgrade</button>
                     </div>
+                    <div class="upgrade-node" id="upg-autoBuy">
+                        <h4>Automated Purchase Matrix</h4>
+                        <p id="desc-autoBuy">Integrates automated optimization routines to buy selected assets continuously.</p>
+                        <span class="node-cost" id="cost-autoBuy">2.50 A$</span>
+                        <button onclick="buyUpgrade('autoBuy')" id="btn-upg-autoBuy">Upgrade</button>
+                    </div>
+                </div>
+                <div class="tree-layer">
                     <div class="upgrade-node" id="upg-freezeTime">
                         <h4>Temporal Freeze</h4>
                         <p id="desc-freezeTime">Unlocks the protocol to pause core market processing steps.</p>
                         <span class="node-cost" id="cost-freezeTime">10.00 A$</span>
-                        <button onclick="buyUpgrade('freezeTime')" id="btn-upg-freezeTime">Upgrade</button>
+                        <button onclick="buyUpgrade('freezeTime')" id="btn-upg-freezeTime">Locked</button>
                     </div>
-                </div>
-                <div class="tree-layer">
                     <div class="upgrade-node" id="upg-leverage">
                         <h4>Syndicate Leverage</h4>
                         <p id="desc-leverage">Amplifies active job income by +50% per level.</p>
@@ -475,14 +511,14 @@
                         <span class="node-cost" id="cost-bullRun">1.00 A$</span>
                         <button onclick="buyUpgrade('bullRun')" id="btn-upg-bullRun">Locked</button>
                     </div>
+                </div>
+                <div class="tree-layer">
                     <div class="upgrade-node" id="upg-volatile">
                         <h4>Controlled Chaos</h4>
                         <p id="desc-volatile">Amplifies volatility swings by +20% per level.</p>
                         <span class="node-cost" id="cost-volatile">2.50 A$</span>
                         <button onclick="buyUpgrade('volatile')" id="btn-upg-volatile">Locked</button>
                     </div>
-                </div>
-                <div class="tree-layer">
                     <div class="upgrade-node" id="upg-divine">
                         <h4>True Capital Siphon</h4>
                         <p id="desc-divine">Passively leaks +0.1% of portfolio values into cash every tick per level.</p>
@@ -495,6 +531,8 @@
                         <span class="node-cost" id="cost-unregulated">50.00 A$</span>
                         <button onclick="buyUpgrade('unregulated')" id="btn-upg-unregulated">Locked</button>
                     </div>
+                </div>
+                <div class="tree-layer">
                     <div class="upgrade-node" id="upg-macroShift">
                         <h4>Macroeconomic Paradigm Shift</h4>
                         <p id="desc-macroShift">Increases A$ conversion ratios by +8% per level.</p>
@@ -521,30 +559,31 @@
             currentJobId: null,
             isPaused: false,
             assets: {
-                'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.03, history: Array(25).fill(150), hidden: false },
-                'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.05, history: Array(25).fill(250), hidden: false },
-                'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(90), hidden: false },
-                'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.02, history: Array(25).fill(100), hidden: false },
+                'AAPL': { type: 'stock', name: 'Fruit Corp', price: 150, basePrice: 150, owned: 0, avgPrice: 0, change: 0, volatility: 0.03, history: Array(25).fill(150), hidden: false, autoBuy: false },
+                'TSLA': { type: 'stock', name: 'Lightning Auto', price: 250, basePrice: 250, owned: 0, avgPrice: 0, change: 0, volatility: 0.05, history: Array(25).fill(250), hidden: false, autoBuy: false },
+                'AMZN': { type: 'stock', name: 'Jungle Retail', price: 90, basePrice: 90, owned: 0, avgPrice: 0, change: 0, volatility: 0.04, history: Array(25).fill(90), hidden: false, autoBuy: false },
+                'INDEX': { type: 'stock', name: 'Arch Index', price: 100, basePrice: 100, owned: 0, avgPrice: 0, change: 0, volatility: 0.02, history: Array(25).fill(100), hidden: false, autoBuy: false },
                 
                 // Tier 3 Upgraded Stock Extensions
-                'NVDA': { type: 'stock', name: 'AI Compute Syndicate', price: 480, basePrice: 480, owned: 0, avgPrice: 0, change: 0, volatility: 0.12, history: Array(25).fill(480), hidden: true },
-                'AMD': { type: 'stock', name: 'Quantum Chip Foundry', price: 160, basePrice: 160, owned: 0, avgPrice: 0, change: 0, volatility: 0.15, history: Array(25).fill(160), hidden: true },
-                'INTC': { type: 'stock', name: 'Legacy Fab Restructuring', price: 35, basePrice: 35, owned: 0, avgPrice: 0, change: 0, volatility: 0.19, history: Array(25).fill(35), hidden: true },
+                'NVDA': { type: 'stock', name: 'AI Compute Syndicate', price: 480, basePrice: 480, owned: 0, avgPrice: 0, change: 0, volatility: 0.12, history: Array(25).fill(480), hidden: true, autoBuy: false },
+                'AMD': { type: 'stock', name: 'Quantum Chip Foundry', price: 160, basePrice: 160, owned: 0, avgPrice: 0, change: 0, volatility: 0.15, history: Array(25).fill(160), hidden: true, autoBuy: false },
+                'INTC': { type: 'stock', name: 'Legacy Fab Restructuring', price: 35, basePrice: 35, owned: 0, avgPrice: 0, change: 0, volatility: 0.19, history: Array(25).fill(35), hidden: true, autoBuy: false },
 
-                'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.40, history: Array(25).fill(30000) }, 
-                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.50, history: Array(25).fill(1800) },
-                'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.85, history: Array(25).fill(0.10) }
+                'BTC': { type: 'crypto', name: 'Grandpa Coin', price: 30000, basePrice: 30000, owned: 0, avgPrice: 0, change: 0, volatility: 0.40, history: Array(25).fill(30000), autoBuy: false }, 
+                'ETH': { type: 'crypto', name: 'Gas Fee Token', price: 1800, basePrice: 1800, owned: 0, avgPrice: 0, change: 0, volatility: 0.50, history: Array(25).fill(1800), autoBuy: false },
+                'DOGE': { type: 'crypto', name: 'Shiba Fund', price: 0.10, basePrice: 0.10, owned: 0, avgPrice: 0, change: 0, volatility: 0.85, history: Array(25).fill(0.10), autoBuy: false }
             },
             upgrades: {
                 nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 199 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
-                freezeTime: { level: 0, baseCost: 10.0, scaling: 5.0, layer: 1, maxLevel: 1 },
-                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 48, requires: ['nestEgg', 'brokerage','freezeTime'] },
-                bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage','freezeTime'] },
-                volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, maxLevel: 625, requires: ['nestEgg', 'brokerage','freezeTime'] },
-                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['bullRun', 'volatile'] },
-                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] },
-                macroShift: { level: 0, baseCost: 75.0, scaling: 2.5, layer: 3, maxLevel: 100, requires: ['bullRun', 'volatile'] }
+                autoBuy: { level: 0, baseCost: 2.5, scaling: 2.0, layer: 1, maxLevel: 1 },
+                freezeTime: { level: 0, baseCost: 10.0, scaling: 5.0, layer: 1, maxLevel: 1, },
+                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 48, requires: ['nestEgg', 'brokerage', 'autoBuy'] },
+                bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage', 'autoBuy'] },
+                volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 3, maxLevel: 625, requires: ['freezeTime', 'leverage', 'bullRun'] },
+                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['freezeTime', 'leverage', 'bullRun'] },
+                unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['freezeTime', 'leverage', 'bullRun'] },
+                macroShift: { level: 0, baseCost: 75.0, scaling: 2.5, layer: 4, maxLevel: 100, requires: ['volatile', 'divine', 'unregulated'] }
             },
             jobs: [
                 { id: 'intern', name: 'Paid Algorithm Intern', revenue: 2, req: 0 },
@@ -560,11 +599,11 @@
 
         // --- LOCAL STORAGE SAVE & LOAD ---
         function saveGame() {
-            localStorage.setItem('architect_save_v4_asym', JSON.stringify(state));
+            localStorage.setItem('architect_save_v5_auto', JSON.stringify(state));
         }
 
         function loadGame() {
-            const saved = localStorage.getItem('architect_save_v4_asym');
+            const saved = localStorage.getItem('architect_save_v5_auto');
             if (!saved) return;
             parseAndApplySave(saved, false);
         }
@@ -572,7 +611,7 @@
         // --- BASE64 IMPORT / EXPORT SYSTEM ---
         function exportSave() {
             saveGame();
-            const rawSave = localStorage.getItem('architect_save_v4_asym');
+            const rawSave = localStorage.getItem('architect_save_v5_auto');
             if (!rawSave) {
                 logMessage("Error compiling save matrix.");
                 return;
@@ -623,6 +662,7 @@
                         state.assets[ticker].owned = parsed.assets[ticker].owned;
                         state.assets[ticker].avgPrice = parsed.assets[ticker].avgPrice || 0;
                         state.assets[ticker].change = parsed.assets[ticker].change;
+                        state.assets[ticker].autoBuy = parsed.assets[ticker].autoBuy || false;
                         state.assets[ticker].history = parsed.assets[ticker].history || Array(25).fill(parsed.assets[ticker].price || state.assets[ticker].price);
                     }
                 }
@@ -641,7 +681,7 @@
 
         function wipeSave() {
             if(confirm("Confirm structural purge? This completely wipes out all savings and ascension currencies.")) {
-                localStorage.removeItem('architect_save_v4_asym');
+                localStorage.removeItem('architect_save_v5_auto');
                 window.location.reload();
             }
         }
@@ -650,11 +690,9 @@
             const totalVal = getPortfolioValue();
             if (totalVal < REBIRTH_REQUIREMENT) return 0;
             
-            // Baseline conversion algorithm
             let multiplier = 1 / Math.pow(15000, 0.613);
             let baseA$ = multiplier * Math.pow(totalVal, 0.613);
             
-            // Apply direct +8% compounding ratio bonus per level
             let upgradeBonus = Math.pow(1.08, state.upgrades.macroShift.level);
             return baseA$ * upgradeBonus;
         }
@@ -688,7 +726,7 @@
             const level = state.upgrades.unregulated.level;
             state.assets['NVDA'].hidden = level < 1;
             state.assets['AMD'].hidden = level < 2;
-            state.assets['INTC'].hidden = level < 3;
+            state.assets['INTC'].hidden = hidden = level < 3;
         }
 
         function switchTab(tabName) {
@@ -713,6 +751,38 @@
         function getJobRevenue(job) {
             const multiplier = 1 + (state.upgrades.leverage.level * 0.50);
             return job.revenue * multiplier;
+        }
+
+        // --- AUTOMATED BUY TRADING ROUTINE ---
+        function executeAutoBuyRoutines() {
+            if (state.upgrades.autoBuy.level <= 0) return;
+            
+            for (let ticker in state.assets) {
+                const asset = state.assets[ticker];
+                if (!asset.hidden && asset.autoBuy) {
+                    let maxUnits = Math.floor(state.cash / (asset.price * (1 + getFeeMultiplier())));
+                    if (maxUnits > 0) {
+                        const cost = asset.price * maxUnits;
+                        const fee = cost * getFeeMultiplier();
+                        const totalCost = cost + fee;
+
+                        if (state.cash >= totalCost) {
+                            state.cash -= totalCost;
+                            const currentTotalCostValue = (asset.owned * asset.avgPrice) + cost;
+                            asset.owned += maxUnits;
+                            asset.avgPrice = currentTotalCostValue / asset.owned;
+                            logMessage(`[Auto-Buy Engine] Executed ${maxUnits} ${ticker} for $${formatNumber(cost)}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        function toggleAutoBuy() {
+            const ticker = state.selectedAsset;
+            if (!ticker || state.upgrades.autoBuy.level <= 0) return;
+            state.assets[ticker].autoBuy = !state.assets[ticker].autoBuy;
+            updateUI();
         }
 
         function toggleTheme() {
@@ -757,9 +827,13 @@
             renderJobs();
         }
 
+        // Modified log system to prevent high-frequency automated purchase logs from freezing the DOM
         function logMessage(msg) {
             const box = document.getElementById('log-box');
             box.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>` + box.innerHTML;
+            if(box.children.length > 40) {
+                box.removeChild(box.lastChild);
+            }
         }
 
         function selectAsset(ticker) {
@@ -859,7 +933,6 @@
             }
         }
 
-        // --- UPGRADE ENGINE ---
         function buyUpgrade(id) {
             const upg = state.upgrades[id];
             const cost = getUpgradeCost(id);
@@ -908,6 +981,7 @@
                 state.assets[ticker].avgPrice = 0;
                 state.assets[ticker].price = state.assets[ticker].basePrice;
                 state.assets[ticker].change = 0;
+                state.assets[ticker].autoBuy = false;
                 state.assets[ticker].history = Array(25).fill(state.assets[ticker].basePrice);
                 animatedPrices[ticker] = state.assets[ticker].basePrice;
             }
@@ -954,6 +1028,18 @@
                 return;
             }
 
+            if (state.currentJobId) {
+                const activeJob = state.jobs.find(j => j.id === state.currentJobId);
+                state.cash += getJobRevenue(activeJob);
+            }
+
+            if (state.upgrades.divine.level > 0) {
+                const reward = getPortfolioValue() * (0.001 * state.upgrades.divine.level); 
+                state.cash += reward;
+            }
+
+            executeAutoBuyRoutines();
+
             for (let ticker in state.assets) {
                 if (state.assets[ticker].hidden) continue;
 
@@ -993,16 +1079,6 @@
                 }
             }
 
-            if (state.currentJobId) {
-                const activeJob = state.jobs.find(j => j.id === state.currentJobId);
-                state.cash += getJobRevenue(activeJob);
-            }
-
-            if (state.upgrades.divine.level > 0) {
-                const reward = getPortfolioValue() * (0.001 * state.upgrades.divine.level); 
-                state.cash += reward;
-            }
-
             updateUI();
             renderJobs(); 
             drawChart();
@@ -1030,7 +1106,7 @@
             const currentPrice = asset.price;
 
             let distance = currentPrice * 0.35; 
-            
+			
             let stepInterval;
             if (distance <= 0) {
                 stepInterval = 0.05;
@@ -1157,6 +1233,11 @@
                 pauseBtn.style.display = 'none';
             }
 
+            // Global visibility flag for unlocked auto-buy logic rows
+            const hasAutoBuyMatrix = state.upgrades.autoBuy.level > 0;
+            document.getElementById('stock-autobuy-row').style.display = hasAutoBuyMatrix ? 'flex' : 'none';
+            document.getElementById('crypto-autobuy-row').style.display = hasAutoBuyMatrix ? 'flex' : 'none';
+
             if (state.selectedAsset) {
                 const curAsset = state.assets[state.selectedAsset];
                 const prefix = curAsset.type === 'stock' ? 'stock' : 'crypto';
@@ -1187,6 +1268,18 @@
                 } else {
                     pAvgBox.style.display = 'none';
                 }
+
+                // Sync toggle switch state UI elements
+                if (hasAutoBuyMatrix) {
+                    const toggleBtn = document.getElementById(`${prefix}-autobuy-toggle`);
+                    if (curAsset.autoBuy) {
+                        toggleBtn.innerText = "Auto-Buy Max: ON";
+                        toggleBtn.className = "autobuy-btn active";
+                    } else {
+                        toggleBtn.innerText = "Auto-Buy Max: OFF";
+                        toggleBtn.className = "autobuy-btn";
+                    }
+                }
             }
 
             let stocksHTML = '';
@@ -1199,10 +1292,11 @@
                 const changeClass = asset.change >= 0 ? 'price-up' : 'price-down';
                 const prefix = asset.change >= 0 ? '+' : '';
                 const isSel = state.selectedAsset === ticker ? 'class="selected-row"' : '';
+                const displayTicker = asset.autoBuy ? `🤖 ${ticker}` : ticker;
                 
                 const rowHTML = `
                     <tr id="row-${ticker}" ${isSel} onclick="selectAsset('${ticker}')">
-                        <td><strong>${ticker}</strong></td>
+                        <td><strong>${displayTicker}</strong></td>
                         <td>${asset.name}</td>
                         <td>$${formatNumber(asset.price)}</td>
                         <td class="${changeClass}">${prefix}${asset.change.toFixed(2)}%</td>
@@ -1228,6 +1322,7 @@
                 
                 if(id === 'nestEgg') descEl.innerText = `Current Bonus: +$${upg.level * 100} at launch.\nAdds +$100 starting money/lvl.`;
                 if(id === 'brokerage') descEl.innerText = `Current Fee: ${(getFeeMultiplier() * 100).toFixed(2)}%.\nRemoves 1% from standard fee/lvl.`;
+                if(id === 'autoBuy') descEl.innerText = `Status: ${upg.level > 0 ? "Active" : "Offline"}.\nUnlocks interactive loop parameters to automatically buy selected assets.`;
                 if(id === 'freezeTime') descEl.innerText = `Current Core Matrix: ${upg.level > 0 ? "Unlocked" : "Locked"}.\nUnlocks a cycle execution bypass.`;
                 if(id === 'leverage') descEl.innerText = `Current Mult: +${upg.level * 50}%\nAmplifies base job income payload by +50%/lvl.`;
                 if(id === 'bullRun') descEl.innerText = `Current Engine Luck: +${upg.level * 2}%\nIncreases drift trend vectors by +2%/lvl.`;
