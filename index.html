@@ -573,7 +573,7 @@
             try {
                 const encoded = btoa(encodeURIComponent(rawSave));
                 navigator.clipboard.writeText(encoded).then(() => {
-                    alert("Encoded save configuration copied to clipboard!");
+                    alert("Save data copied to clipboard!");
                     logMessage("Save matrix successfully serialized into Base64 string.");
                 }).catch(() => {
                     prompt("Failed auto-copy. Manually extract string payload here:", encoded);
