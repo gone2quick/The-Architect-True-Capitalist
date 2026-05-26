@@ -471,7 +471,7 @@
                     </div>
                     <div class="upgrade-node" id="upg-bullRun">
                         <h4>Sentiment Override</h4>
-                        <p id="desc-bullRun">Increases general trade luck indices by +5% per level.</p>
+                        <p id="desc-bullRun">Increases general trade luck indices by +2% per level.</p>
                         <span class="node-cost" id="cost-bullRun">1.00 A$</span>
                         <button onclick="buyUpgrade('bullRun')" id="btn-upg-bullRun">Locked</button>
                     </div>
@@ -533,10 +533,10 @@
                 nestEgg: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 199 },
                 brokerage: { level: 0, baseCost: 0.1, scaling: 1.5, layer: 1, maxLevel: 99 },
                 freezeTime: { level: 0, baseCost: 10.0, scaling: 5.0, layer: 1, maxLevel: 1 },
-                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 50, requires: ['nestEgg', 'brokerage'] },
-                bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, requires: ['nestEgg', 'brokerage'] },
-                volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, requires: ['nestEgg', 'brokerage'] },
-                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, requires: ['bullRun', 'volatile'] },
+                leverage: { level: 0, baseCost: 0.25, scaling: 1.6, layer: 2, maxLevel: 48, requires: ['nestEgg', 'brokerage'] },
+                bullRun: { level: 0, baseCost: 1.0, scaling: 1.8, layer: 2, maxLevel: 500, requires: ['nestEgg', 'brokerage'] },
+                volatile: { level: 0, baseCost: 2.5, scaling: 1.7, layer: 2, maxLevel: 625, requires: ['nestEgg', 'brokerage'] },
+                divine: { level: 0, baseCost: 100.0, scaling: 2.2, layer: 3, maxLevel: 1000, requires: ['bullRun', 'volatile'] },
                 unregulated: { level: 0, baseCost: 50.0, scaling: 10.0, layer: 3, maxLevel: 3, requires: ['bullRun', 'volatile'] }
             },
             jobs: [
