@@ -1240,8 +1240,9 @@
                 if(id === 'volatile') descEl.innerText = `Current Amplitude: +${upg.level * 20}%\nAmplifies price swing variables by +20%/lvl.`;
                 if(id === 'divine') descEl.innerText = `Passive Siphon Rate: +${(upg.level * 0.1).toFixed(1)}%/cycle\nLeaks portfolio values to cash/lvl.`;
                 if(id === 'unregulated') descEl.innerText = `Unlocks high-gain stocks: [${upg.level}/3]\nLvl 1: NVDA, Lvl 2: AMD, Lvl 3: INTC.`;
-if(id === 'exchangeRate') descEl.innerText = `Req: -$${formatNumber(8000 - Math.max(1000, 8000 * Math.pow(0.92, upg.level || 0)))} | Yield: +${((Math.pow(1.08, upg.level || 0) - 1) * 100).toFixed(0)}%\nOptimizes conversion formula pipelines.`;
-                if (upg.maxLevel && upg.level >= upg.maxLevel) {
+				if(id === 'exchangeRate') descEl.innerText = `Req: -$${formatNumber(8000 - Math.max(1000, 8000 * Math.pow(0.92, upg.level || 0)))} | Yield: +${((Math.pow(1.08, upg.level || 0) - 1) * 100).toFixed(0)}%\nOptimizes conversion formula pipelines.`;
+                
+				if (upg.maxLevel && upg.level >= upg.maxLevel) {
                     nodeEl.classList.add('maxed');
                     document.getElementById(`cost-${id}`).innerText = "MAXED";
                     btnEl.innerText = 'Max Lvl';
